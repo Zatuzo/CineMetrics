@@ -8,8 +8,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from data_pipeline import (
     load_letterboxd_bundle, 
     load_watchlist_data,
-    get_cinematic_persona,
-    generate_instagram_story_card
+    get_cinematic_persona
 )
 
 st.set_page_config(page_title="CineMetrics | Film Diary Engine", layout="wide", page_icon="🎬")
@@ -53,7 +52,7 @@ tab_rewind, tab_overview, tab_habits, tab_semantic = st.tabs([
 # TAB 1: Monthly Rewind (Spotify Wrapped Style)
 # ----------------------------------------------------
 with tab_rewind:
-    st.subheader("📼 Monthly Rewind & Instagram Story Exporter")
+    st.subheader("📼 Monthly Rewind")
     st.caption("A Spotify Wrapped–style monthly retrospective of your cinema diary, top directors, and watch time.")
 
     valid_months = df.dropna(subset=['Month_Year'])
@@ -138,35 +137,6 @@ with tab_rewind:
                     fig_mg.update_layout(height=220, margin=dict(l=10, r=10, t=10, b=10), yaxis={'autorange': 'reversed'})
                     st.plotly_chart(fig_mg, use_container_width=True)
 
-            # ----------------------------------------------------
-            # INSTAGRAM STORY EXPORTER SECTION
-            # ----------------------------------------------------
-            st.markdown("---")
-            st.subheader("📸 Export for Instagram Story (9:16)")
-            st.caption("Generate an eye-catching 1080x1920 graphic formatted perfectly for Instagram Stories and social sharing.")
-            
-            btn_col1, btn_col2 = st.columns([1, 2])
-            with btn_col1:
-                render_story = st.button("✨ Generate Story Card", use_container_width=True)
-                
-            if render_story:
-                with st.spinner("Rendering 9:16 Instagram Story Card..."):
-                    story_img = generate_instagram_story_card(selected_month, m_df)
-                    
-                    if story_img:
-                        buf = io.BytesIO()
-                        story_img.save(buf, format="PNG", quality=95)
-                        png_bytes = buf.getvalue()
-                        
-                        st.download_button(
-                            label="⬇️ Download Instagram Story (1080x1920 PNG)",
-                            data=png_bytes,
-                            file_name=f"cinemetrics_rewind_{selected_month}.png",
-                            mime="image/png",
-                            use_container_width=True
-                        )
-                        
-                        st.image(story_img, caption=f"Instagram Story Preview (9:16) — {selected_month}", width=360)
 
 # ----------------------------------------------------
 # TAB 2: Profile Overview
