@@ -1,12 +1,50 @@
 # data_pipeline.py
 import pandas as pd
 import numpy as np
+import requests
+import streamlit as st
+
+TMDB_API_KEY = "76a327a724de6563297b5a4d68a6fcc4"  # Paste your key here
+
+@st.cache_data(show_spinner=False)
+def fetch_tmdb_metadata(movie_name, year=None):
+    """Fetches Director, Genres, and Poster path from TMDb."""
+    if not TMDB_API_KEY or TMDB_API_KEY == "PASTE_YOUR_KEY_HERE":
+        return "Unknown Director", "Cinema", None
+    
+    url = "https://api.themoviedb.org/3/search/movie"
+    params = {"api_key": TMDB_API_KEY, "query": movie_name}
+    if pd.notna(year):
+        params["year"] = int(year)
+        
+    try:
+        r = requests.get(url, params=params, timeout=5).json()
+        results = r.get("results", [])
+        if not results:
+            return "Unknown Director", "Cinema", None
+            
+        movie_id = results[0]["id"]
+        poster_path = results[0].get("poster_path")
+        poster_url = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else None
+        
+        # Get Credits & Details for Director & Genres
+        detail_url = f"https://api.themoviedb.org/3/movie/{movie_id}"
+        detail_res = requests.get(detail_url, params={"api_key": TMDB_API_KEY, "append_to_response": "credits"}, timeout=5).json()
+        
+        # Extract Genres
+        genres = ", ".join([g["name"] for g in detail_res.get("genres", [])]) or "Cinema"
+        
+        # Extract Director
+        crew = detail_res.get("credits", {}).get("crew", [])
+        directors = [m["name"] for m in crew if m.get("job") == "Director"]
+        director = ", ".join(directors) if directors else "Unknown Director"
+        
+        return director, genres, poster_url
+    except Exception:
+        return "Unknown Director", "Cinema", None
+
 
 def load_letterboxd_bundle(uploaded_files=None):
-    """
-    Accepts a list of uploaded CSV files (diary.csv, ratings.csv, reviews.csv)
-    and merges them into a unified analysis DataFrame.
-    """
     if not uploaded_files:
         return get_starter_dataset()
     
@@ -20,10 +58,9 @@ def load_letterboxd_bundle(uploaded_files=None):
         elif 'review' in name:
             file_map['reviews'] = pd.read_csv(f)
         else:
-            # Fallback generic CSV
             file_map[name] = pd.read_csv(f)
 
-    # Base selection priority: diary -> ratings -> reviews
+    # Base selection
     if 'diary' in file_map:
         base_df = file_map['diary']
     elif 'ratings' in file_map:
@@ -33,7 +70,7 @@ def load_letterboxd_bundle(uploaded_files=None):
     else:
         base_df = list(file_map.values())[0]
 
-    # Standardize Base Columns
+    # Dates
     if 'Watched Date' in base_df.columns:
         base_df['Date'] = pd.to_datetime(base_df['Watched Date'], errors='coerce')
     elif 'Date' in base_df.columns:
@@ -41,73 +78,60 @@ def load_letterboxd_bundle(uploaded_files=None):
     else:
         base_df['Date'] = pd.NaT
 
-    # Merge Reviews if available
+    # Merge Reviews
     if 'reviews' in file_map and file_map['reviews'] is not base_df:
         rev_df = file_map['reviews'][['Name', 'Year', 'Review']].dropna(subset=['Review'])
         base_df = pd.merge(base_df, rev_df, on=['Name', 'Year'], how='left')
 
-    # Merge Ratings if base was diary and missing rating column
+    # Merge Ratings
     if 'ratings' in file_map and 'Rating' not in base_df.columns:
         rat_df = file_map['ratings'][['Name', 'Year', 'Rating']]
         base_df = pd.merge(base_df, rat_df, on=['Name', 'Year'], how='left')
 
-    # Data Cleaning & Feature Extraction
     base_df['Year'] = pd.to_numeric(base_df['Year'], errors='coerce')
     base_df['Decade'] = (base_df['Year'] // 10 * 10).dropna().astype(int).astype(str) + 's'
     base_df['Rating'] = pd.to_numeric(base_df['Rating'], errors='coerce')
-    
-    # Placeholders for Director/Genre before TMDb enrichment
-    if 'Director' not in base_df.columns:
+    base_df = base_df.drop_duplicates(subset=['Name', 'Year']).reset_index(drop=True)
+
+    # Enrich with TMDb (cached per movie title)
+    if TMDB_API_KEY and TMDB_API_KEY != "76a327a724de6563297b5a4d68a6fcc4":
+        directors, genres, posters = [], [], []
+        prog = st.progress(0, text="Fetching director and genre metadata from TMDb...")
+        total = len(base_df)
+        
+        for i, row in base_df.iterrows():
+            d, g, p = fetch_tmdb_metadata(row['Name'], row.get('Year'))
+            directors.append(d)
+            genres.append(g)
+            posters.append(p)
+            prog.progress((i + 1) / total)
+            
+        prog.empty()
+        base_df['Director'] = directors
+        base_df['Genre'] = genres
+        base_df['Poster'] = posters
+    else:
         base_df['Director'] = 'Unknown Director'
-    if 'Genre' not in base_df.columns:
         base_df['Genre'] = 'Cinema'
+        base_df['Poster'] = None
+
     if 'Review' not in base_df.columns:
         base_df['Review'] = ''
 
-    return base_df.drop_duplicates(subset=['Name', 'Year']).reset_index(drop=True)
+    return base_df
 
 
 def get_starter_dataset():
-    """Default fallback sample if no files are uploaded."""
+    # Demo dataset fallback
     df = pd.DataFrame({
-        'Date': pd.date_range(start='2024-01-01', periods=25, freq='W'),
-        'Name': [
-            'Nightcrawler', 'The Remains of the Day', 'Zodiac', 'Memories of Murder',
-            'Drive', 'Taxi Driver', 'No Country for Old Men', 'There Will Be Blood',
-            'Blade Runner 2049', 'Arrival', 'Sicario', 'Prisoners',
-            'Fargo', 'The Big Lebowski', 'Chinatown', 'Heat',
-            'Cure', 'High and Low', 'Ran', 'Seven Samurai',
-            'Yi Yi', 'A Brighter Summer Day', 'Burning', 'Parasite', 'Decision to Leave'
-        ],
-        'Year': [
-            2014, 1993, 2007, 2003, 2011, 1976, 2007, 2007,
-            2017, 2016, 2015, 2013, 1996, 1998, 1974, 1995,
-            1997, 1963, 1985, 1954, 2000, 1991, 2018, 2019, 2022
-        ],
-        'Rating': [
-            4.5, 5.0, 4.5, 5.0, 4.0, 4.5, 5.0, 5.0,
-            4.5, 4.5, 4.0, 4.5, 4.0, 4.0, 4.5, 4.5,
-            5.0, 4.5, 4.5, 5.0, 5.0, 5.0, 4.5, 4.5, 4.5
-        ],
-        'Director': [
-            'Dan Gilroy', 'James Ivory', 'David Fincher', 'Bong Joon-ho',
-            'Nicolas Winding Refn', 'Martin Scorsese', 'Coen Brothers', 'Paul Thomas Anderson',
-            'Denis Villeneuve', 'Denis Villeneuve', 'Denis Villeneuve', 'Denis Villeneuve',
-            'Coen Brothers', 'Coen Brothers', 'Roman Polanski', 'Michael Mann',
-            'Kiyoshi Kurosawa', 'Akira Kurosawa', 'Akira Kurosawa', 'Akira Kurosawa',
-            'Edward Yang', 'Edward Yang', 'Lee Chang-dong', 'Bong Joon-ho', 'Park Chan-wook'
-        ],
-        'Genre': [
-            'Crime, Thriller', 'Drama, Romance', 'Crime, Mystery, Thriller', 'Crime, Drama, Mystery',
-            'Crime, Drama', 'Crime, Drama', 'Crime, Drama, Thriller', 'Drama',
-            'Sci-Fi, Drama', 'Sci-Fi, Drama', 'Action, Crime, Thriller', 'Crime, Drama, Mystery',
-            'Crime, Thriller', 'Comedy, Crime', 'Mystery, Thriller', 'Action, Crime, Drama',
-            'Crime, Horror, Mystery', 'Crime, Drama, Mystery', 'Action, Drama', 'Action, Drama',
-            'Drama, Romance', 'Crime, Drama, Romance', 'Drama, Mystery', 'Comedy, Drama, Thriller', 'Mystery, Romance, Thriller'
-        ],
-        'Review': [''] * 25
+        'Date': pd.date_range(start='2024-01-01', periods=5, freq='W'),
+        'Name': ['Nightcrawler', 'The Remains of the Day', 'Zodiac', 'Memories of Murder', 'Drive'],
+        'Year': [2014, 1993, 2007, 2003, 2011],
+        'Rating': [4.5, 5.0, 4.5, 5.0, 4.0],
+        'Director': ['Dan Gilroy', 'James Ivory', 'David Fincher', 'Bong Joon-ho', 'Nicolas Winding Refn'],
+        'Genre': ['Crime, Thriller', 'Drama, Romance', 'Crime, Mystery', 'Crime, Drama', 'Crime, Drama'],
+        'Review': [''] * 5,
+        'Poster': [None] * 5
     })
-    df['Year'] = pd.to_numeric(df['Year'], errors='coerce')
     df['Decade'] = (df['Year'] // 10 * 10).astype(str) + 's'
-    df['Rating'] = pd.to_numeric(df['Rating'], errors='coerce')
     return df
