@@ -4,12 +4,12 @@ import numpy as np
 import requests
 import streamlit as st
 
-TMDB_API_KEY = "76a327a724de6563297b5a4d68a6fcc4"  # Paste your key here
+TMDB_API_KEY = "76a327a724de6563297b5a4d68a6fcc4"
 
 @st.cache_data(show_spinner=False)
 def fetch_tmdb_metadata(movie_name, year=None):
     """Fetches Director, Genres, and Poster path from TMDb."""
-    if not TMDB_API_KEY or TMDB_API_KEY == "PASTE_YOUR_KEY_HERE":
+    if not TMDB_API_KEY:
         return "Unknown Director", "Cinema", None
     
     url = "https://api.themoviedb.org/3/search/movie"
@@ -29,7 +29,11 @@ def fetch_tmdb_metadata(movie_name, year=None):
         
         # Get Credits & Details for Director & Genres
         detail_url = f"https://api.themoviedb.org/3/movie/{movie_id}"
-        detail_res = requests.get(detail_url, params={"api_key": TMDB_API_KEY, "append_to_response": "credits"}, timeout=5).json()
+        detail_res = requests.get(
+            detail_url, 
+            params={"api_key": TMDB_API_KEY, "append_to_response": "credits"}, 
+            timeout=5
+        ).json()
         
         # Extract Genres
         genres = ", ".join([g["name"] for g in detail_res.get("genres", [])]) or "Cinema"
@@ -60,7 +64,7 @@ def load_letterboxd_bundle(uploaded_files=None):
         else:
             file_map[name] = pd.read_csv(f)
 
-    # Base selection
+    # Base selection priority
     if 'diary' in file_map:
         base_df = file_map['diary']
     elif 'ratings' in file_map:
@@ -93,8 +97,8 @@ def load_letterboxd_bundle(uploaded_files=None):
     base_df['Rating'] = pd.to_numeric(base_df['Rating'], errors='coerce')
     base_df = base_df.drop_duplicates(subset=['Name', 'Year']).reset_index(drop=True)
 
-    # Enrich with TMDb (cached per movie title)
-    if TMDB_API_KEY and TMDB_API_KEY != "76a327a724de6563297b5a4d68a6fcc4":
+    # Enrich with TMDb
+    if TMDB_API_KEY:
         directors, genres, posters = [], [], []
         prog = st.progress(0, text="Fetching director and genre metadata from TMDb...")
         total = len(base_df)
@@ -122,7 +126,6 @@ def load_letterboxd_bundle(uploaded_files=None):
 
 
 def get_starter_dataset():
-    # Demo dataset fallback
     df = pd.DataFrame({
         'Date': pd.date_range(start='2024-01-01', periods=5, freq='W'),
         'Name': ['Nightcrawler', 'The Remains of the Day', 'Zodiac', 'Memories of Murder', 'Drive'],
