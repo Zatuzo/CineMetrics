@@ -1,54 +1,9 @@
-# data_pipeline.py
-import io
-import requests
-import numpy as np
+# modules/loaders.py
 import pandas as pd
-from PIL import Image, ImageDraw, ImageFont
 import streamlit as st
 from textblob import TextBlob
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-
-TMDB_API_KEY = "76a327a724de6563297b5a4d68a6fcc4"
-
-@st.cache_data(show_spinner=False)
-def fetch_tmdb_metadata(movie_name, year=None):
-    """Fetches Director, Genres, Overview Synopsis, Poster URL, and Runtime."""
-    if not TMDB_API_KEY:
-        return "Unknown Director", "Cinema", "", None, 110
-    
-    url = "https://api.themoviedb.org/3/search/movie"
-    params = {"api_key": TMDB_API_KEY, "query": movie_name}
-    if pd.notna(year):
-        params["year"] = int(year)
-        
-    try:
-        r = requests.get(url, params=params, timeout=5).json()
-        results = r.get("results", [])
-        if not results:
-            return "Unknown Director", "Cinema", "", None, 110
-            
-        movie_id = results[0]["id"]
-        overview = results[0].get("overview", "")
-        poster_path = results[0].get("poster_path")
-        poster_url = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else None
-        
-        detail_url = f"https://api.themoviedb.org/3/movie/{movie_id}"
-        detail_res = requests.get(
-            detail_url, 
-            params={"api_key": TMDB_API_KEY, "append_to_response": "credits"}, 
-            timeout=5
-        ).json()
-        
-        genres = ", ".join([g["name"] for g in detail_res.get("genres", [])]) or "Cinema"
-        crew = detail_res.get("credits", {}).get("crew", [])
-        directors = [m["name"] for m in crew if m.get("job") == "Director"]
-        director = ", ".join(directors) if directors else "Unknown Director"
-        runtime = detail_res.get("runtime") or 110
-        
-        return director, genres, overview, poster_url, int(runtime)
-    except Exception:
-        return "Unknown Director", "Cinema", "", None, 110
+from config import TMDB_API_KEY
+from .tmdb import fetch_tmdb_metadata
 
 
 def safe_read_csv(file_obj):
@@ -81,6 +36,7 @@ def safe_read_csv(file_obj):
 
 @st.cache_data(show_spinner="Processing Letterboxd logs...")
 def load_letterboxd_bundle(uploaded_files=None):
+    """Parses and enriches diary, ratings, and reviews CSVs uploaded from Letterboxd."""
     if not uploaded_files:
         return pd.DataFrame()
     
@@ -173,6 +129,7 @@ def load_letterboxd_bundle(uploaded_files=None):
 
 @st.cache_data(show_spinner="Processing Letterboxd watchlist...")
 def load_watchlist_data(uploaded_files=None):
+    """Parses and enriches watchlist CSV uploaded from Letterboxd."""
     if not uploaded_files:
         return pd.DataFrame()
     
@@ -205,43 +162,3 @@ def load_watchlist_data(uploaded_files=None):
         df_watch['Poster'] = None
         
     return df_watch
-
-
-def get_cinematic_persona(monthly_df):
-    """Calculates a Spotify-style Cinema Persona based on monthly viewing genres and decade."""
-    if monthly_df.empty:
-        return "Cinematic Explorer"
-    
-    all_genres = [
-        g.strip() 
-        for sublist in monthly_df['Genre'].dropna().str.split(',') 
-        for g in sublist 
-        if g.strip() and g.strip() != 'Cinema'
-    ]
-    top_genre = pd.Series(all_genres).mode()
-    genre_str = top_genre[0] if not top_genre.empty else "Cinema"
-    
-    dec_mode = monthly_df['Decade'].mode()
-    decade_str = dec_mode[0] if not dec_mode.empty else ""
-    
-    genre_titles = {
-        'Crime': 'Gritty Crime Specialist',
-        'Thriller': 'Suspense & Neo-Noir Devotee',
-        'Mystery': 'Enigmatic Mystery Seeker',
-        'Drama': 'Introspective Drama Purist',
-        'Science Fiction': 'Futuristic Sci-Fi Visionary',
-        'Sci-Fi': 'Futuristic Sci-Fi Visionary',
-        'Action': 'High-Octane Adrenaline Junkie',
-        'Comedy': 'Feel-Good Comedy Enthusiast',
-        'Horror': 'Midnight Horror Aficionado',
-        'Romance': 'Hopeless Romantic Cinephile',
-        'Animation': 'Whimsical Animation Explorer',
-        'Adventure': 'Epic Quest Adventurer',
-        'Fantasy': 'Mythic World Dreamer',
-        'Documentary': 'Realist Truth Seeker'
-    }
-    
-    persona = genre_titles.get(genre_str, f"{genre_str} Connoisseur")
-    if decade_str and decade_str not in ['N/As', 'nan', '']:
-        return f"{decade_str} {persona}"
-    return persona
