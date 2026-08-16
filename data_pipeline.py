@@ -50,6 +50,35 @@ def fetch_tmdb_metadata(movie_name, year=None):
         return "Unknown Director", "Cinema", "", None
 
 
+def safe_read_csv(file_obj):
+    """Safely reads a Letterboxd CSV file by resolving seek position and skipping metadata headers."""
+    try:
+        file_obj.seek(0)
+        content_bytes = file_obj.read()
+        file_obj.seek(0)
+        
+        content = content_bytes.decode('utf-8-sig', errors='ignore')
+        lines = content.splitlines()
+        
+        skip_rows = 0
+        for i, line in enumerate(lines[:10]):
+            cols = [c.strip().lower() for c in line.split(',')]
+            # Look for headers
+            if any(h in cols for h in ['name', 'watched date', 'date', 'rating', 'uri']):
+                skip_rows = i
+                break
+                
+        file_obj.seek(0)
+        return pd.read_csv(file_obj, skiprows=skip_rows)
+    except Exception:
+        try:
+            file_obj.seek(0)
+            return pd.read_csv(file_obj)
+        except Exception:
+            return pd.DataFrame()
+
+
+@st.cache_data(show_spinner="Processing Letterboxd logs...")
 def load_letterboxd_bundle(uploaded_files=None):
     if not uploaded_files:
         return pd.DataFrame()
@@ -58,13 +87,13 @@ def load_letterboxd_bundle(uploaded_files=None):
     for f in uploaded_files:
         name = f.name.lower()
         if 'diary' in name:
-            file_map['diary'] = pd.read_csv(f)
+            file_map['diary'] = safe_read_csv(f)
         elif 'rating' in name:
-            file_map['ratings'] = pd.read_csv(f)
+            file_map['ratings'] = safe_read_csv(f)
         elif 'review' in name:
-            file_map['reviews'] = pd.read_csv(f)
+            file_map['reviews'] = safe_read_csv(f)
         else:
-            file_map[name] = pd.read_csv(f)
+            file_map[name] = safe_read_csv(f)
 
     if 'diary' in file_map:
         base_df = file_map['diary']
@@ -138,6 +167,7 @@ def load_letterboxd_bundle(uploaded_files=None):
     return base_df
 
 
+@st.cache_data(show_spinner="Processing Letterboxd watchlist...")
 def load_watchlist_data(uploaded_files=None):
     if not uploaded_files:
         return pd.DataFrame()
@@ -146,7 +176,9 @@ def load_watchlist_data(uploaded_files=None):
     if not watchlist_file:
         return pd.DataFrame()
         
-    df_watch = pd.read_csv(watchlist_file)
+    df_watch = safe_read_csv(watchlist_file)
+    if df_watch.empty:
+        return pd.DataFrame()
     df_watch['Year'] = pd.to_numeric(df_watch['Year'], errors='coerce')
     
     if TMDB_API_KEY:
