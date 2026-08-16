@@ -1,7 +1,7 @@
 // src/views/RewindView.jsx
 import React, { useState } from 'react';
 import confetti from 'canvas-confetti';
-import { Share2, Film } from 'lucide-react';
+import { Share2, Film, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { calculateCinematicPersona } from '../data/personas';
 import { generateStoryCardBlob } from '../services/storyCard';
 import MovieCard from '../components/MovieCard';
@@ -13,6 +13,20 @@ export default function RewindView({ diary, onSelectMovie }) {
 
   const [selectedMonth, setSelectedMonth] = useState(months[0] || '2024-03');
   const [isExporting, setIsExporting] = useState(false);
+
+  const currentIndex = months.indexOf(selectedMonth);
+
+  const handlePrevMonth = () => {
+    if (currentIndex < months.length - 1) {
+      setSelectedMonth(months[currentIndex + 1]);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (currentIndex > 0) {
+      setSelectedMonth(months[currentIndex - 1]);
+    }
+  };
 
   const monthFilms = diary.filter(f => f.monthYear === selectedMonth);
   const persona = calculateCinematicPersona(monthFilms);
@@ -101,27 +115,73 @@ export default function RewindView({ diary, onSelectMovie }) {
 
   return (
     <div>
-      {/* Header & Month Selector */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+      {/* Clean Header with Compact Month Dropdown Selector */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '14px' }}>
         <div>
-          <h1 style={{ fontSize: '20px', fontWeight: '800' }}>Monthly Rewind</h1>
+          <h1 style={{ fontSize: '22px', fontWeight: '800' }}>Monthly Rewind</h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
-            Retrospective breakdown for {selectedMonth}.
+            Retrospective breakdown of your viewing diary.
           </p>
         </div>
 
-        {/* Month Pills */}
-        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-          {months.map(m => (
-            <button
-              key={m}
-              className={selectedMonth === m ? 'btn-primary' : 'btn-secondary'}
-              style={{ fontSize: '11px', padding: '5px 10px' }}
-              onClick={() => setSelectedMonth(m)}
+        {/* Compact Month Selector Dropdown with Prev/Next Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button
+            className="btn-secondary"
+            style={{ padding: '6px 8px' }}
+            onClick={handlePrevMonth}
+            disabled={currentIndex >= months.length - 1}
+            title="Previous Month"
+          >
+            <ChevronLeft size={14} />
+          </button>
+
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <Calendar size={13} style={{ position: 'absolute', left: '10px', color: 'var(--accent-red)', pointerEvents: 'none' }} />
+            <select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="form-select"
+              style={{
+                paddingLeft: '30px',
+                paddingRight: '28px',
+                height: '34px',
+                fontSize: '12px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                background: 'var(--bg-card)',
+                color: 'var(--text-primary)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: 'var(--radius-sm)'
+              }}
             >
-              {m}
-            </button>
-          ))}
+              {months.map(m => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <button
+            className="btn-secondary"
+            style={{ padding: '6px 8px' }}
+            onClick={handleNextMonth}
+            disabled={currentIndex <= 0}
+            title="Next Month"
+          >
+            <ChevronRight size={14} />
+          </button>
+
+          <button
+            className="btn-primary"
+            style={{ marginLeft: '6px' }}
+            onClick={handleShareStory}
+            disabled={isExporting}
+          >
+            <Share2 size={13} />
+            <span>{isExporting ? 'Exporting...' : 'Share'}</span>
+          </button>
         </div>
       </div>
 
@@ -143,28 +203,16 @@ export default function RewindView({ diary, onSelectMovie }) {
             padding: '20px',
             marginBottom: '28px'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '14px' }}>
-              <div>
-                <span className="hero-tag">
-                  {selectedMonth} REWIND
-                </span>
-                <h2 style={{ fontSize: '22px', fontWeight: '800', color: 'var(--text-primary)', marginTop: '4px', marginBottom: '2px' }}>
-                  {persona}
-                </h2>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
-                  Your primary viewing character for <b>{selectedMonth}</b>.
-                </p>
-              </div>
-
-              {/* Share Button */}
-              <button
-                className="btn-primary"
-                onClick={handleShareStory}
-                disabled={isExporting}
-              >
-                <Share2 size={13} />
-                <span>{isExporting ? 'Generating...' : 'Share'}</span>
-              </button>
+            <div>
+              <span className="hero-tag">
+                {selectedMonth} REWIND
+              </span>
+              <h2 style={{ fontSize: '22px', fontWeight: '800', color: 'var(--text-primary)', marginTop: '4px', marginBottom: '2px' }}>
+                {persona}
+              </h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
+                Your primary viewing profile for <b>{selectedMonth}</b>.
+              </p>
             </div>
 
             {/* KPI Grid */}
@@ -188,7 +236,7 @@ export default function RewindView({ diary, onSelectMovie }) {
             </div>
           </div>
 
-          {/* All Month Films Grid (not just top 3) */}
+          {/* All Month Films Grid */}
           <div className="section-container">
             <div className="section-header">
               <div>

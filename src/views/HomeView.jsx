@@ -4,7 +4,7 @@ import MovieCard from '../components/MovieCard';
 import PosterImage from '../components/PosterImage';
 import { calculateCinematicPersona } from '../data/personas';
 import { buildCinemaMixes, populateMixDiscoveries } from '../services/mixEngine';
-import { ChevronRight, Sparkles } from 'lucide-react';
+import { ChevronRight, Star, Bookmark, Disc3, Sparkles, Compass } from 'lucide-react';
 
 export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix, onNavigate }) {
   const persona = calculateCinematicPersona(diary);
@@ -28,9 +28,67 @@ export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix,
   // Recent logs
   const recentFilms = [...diary].reverse().slice(0, 6);
 
+  // 5-Star / Top Rated Masterpieces
+  const topRatedFilms = diary.filter(f => f.rating && f.rating >= 4.5).slice(0, 6);
+
+  // Watchlist Queue (top unwatched)
+  const watchlistQueue = (watchlist || []).slice(0, 6);
+
+  const topMix1 = mixes[0];
+  const topMix2 = mixes[1];
+
   return (
     <div>
-      {/* 1. Recently Logged (Movies First!) */}
+      {/* 1. Spotify-Style Quick Access 6-Grid */}
+      <div className="quick-grid">
+        <div className="quick-tile" onClick={() => onNavigate('rewind')}>
+          <div className="quick-tile-icon" style={{ background: 'var(--accent-red-subtle)', color: 'var(--accent-red)' }}>
+            <Sparkles size={20} />
+          </div>
+          <span className="quick-tile-text">Monthly Rewind</span>
+        </div>
+
+        <div className="quick-tile" onClick={() => onNavigate('semantic')}>
+          <div className="quick-tile-icon" style={{ background: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa' }}>
+            <Compass size={20} />
+          </div>
+          <span className="quick-tile-text">Vibe Search</span>
+        </div>
+
+        {topMix1 && (
+          <div className="quick-tile" onClick={() => { onSelectMix(topMix1); onNavigate('mixes'); }}>
+            <div className="quick-tile-icon" style={{ background: 'rgba(234, 179, 8, 0.15)', color: 'var(--accent-gold)' }}>
+              <Disc3 size={20} />
+            </div>
+            <span className="quick-tile-text">{topMix1.title}</span>
+          </div>
+        )}
+
+        {topMix2 && (
+          <div className="quick-tile" onClick={() => { onSelectMix(topMix2); onNavigate('mixes'); }}>
+            <div className="quick-tile-icon" style={{ background: 'rgba(168, 85, 247, 0.15)', color: '#c084fc' }}>
+              <Disc3 size={20} />
+            </div>
+            <span className="quick-tile-text">{topMix2.title}</span>
+          </div>
+        )}
+
+        <div className="quick-tile" onClick={() => onNavigate('semantic')}>
+          <div className="quick-tile-icon" style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#34d399' }}>
+            <Bookmark size={20} />
+          </div>
+          <span className="quick-tile-text">Watchlist ({watchlist.length})</span>
+        </div>
+
+        <div className="quick-tile" onClick={() => onNavigate('analytics')}>
+          <div className="quick-tile-icon" style={{ background: 'var(--accent-gold-subtle)', color: 'var(--accent-gold)' }}>
+            <Star size={20} fill="currentColor" />
+          </div>
+          <span className="quick-tile-text">Masterpieces ({topRatedFilms.length})</span>
+        </div>
+      </div>
+
+      {/* 2. Recently Logged Rail */}
       <div className="section-container">
         <div className="section-header">
           <div>
@@ -57,12 +115,12 @@ export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix,
         </div>
       </div>
 
-      {/* 2. Cinema Mixes */}
+      {/* 3. Cinema Mixes Rail */}
       <div className="section-container">
         <div className="section-header">
           <div>
-            <h2 className="section-title">Cinema Mixes</h2>
-            <p className="section-subtitle">Unwatched recommendations based on your favorite genres.</p>
+            <h2 className="section-title">Your Cinema Mixes</h2>
+            <p className="section-subtitle">Unwatched discoveries tailored to your favorite genres.</p>
           </div>
           <button
             className="btn-secondary"
@@ -102,7 +160,58 @@ export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix,
         </div>
       </div>
 
-      {/* 3. Sleek Compact Persona Profile (Neatly placed below movies) */}
+      {/* 4. Watchlist Queue (If watchlist has items) */}
+      {watchlistQueue.length > 0 && (
+        <div className="section-container">
+          <div className="section-header">
+            <div>
+              <h2 className="section-title">From Your Watchlist</h2>
+              <p className="section-subtitle">Unwatched gems queued for your next screening.</p>
+            </div>
+            <button
+              className="btn-secondary"
+              onClick={() => onNavigate('semantic')}
+            >
+              <span>Vibe Search</span>
+              <ChevronRight size={13} />
+            </button>
+          </div>
+
+          <div className="media-rail">
+            {watchlistQueue.map(film => (
+              <MovieCard
+                key={film.id}
+                movie={film}
+                onSelect={onSelectMovie}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 5. 5-Star Masterpieces (Highest rated films) */}
+      {topRatedFilms.length > 0 && (
+        <div className="section-container">
+          <div className="section-header">
+            <div>
+              <h2 className="section-title">5-Star Masterpieces</h2>
+              <p className="section-subtitle">Your highest-rated films in the diary.</p>
+            </div>
+          </div>
+
+          <div className="media-rail">
+            {topRatedFilms.map(film => (
+              <MovieCard
+                key={film.id}
+                movie={film}
+                onSelect={onSelectMovie}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 6. Persona Summary Footer Card */}
       <div style={{
         background: 'var(--bg-card)',
         border: '1px solid var(--border-subtle)',
@@ -112,7 +221,8 @@ export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix,
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
-        gap: '16px'
+        gap: '16px',
+        marginTop: '12px'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{
