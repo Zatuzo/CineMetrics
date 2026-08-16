@@ -41,12 +41,10 @@ k4.metric("Top Director", top_dir[0] if not top_dir.empty else "N/A")
 st.markdown("---")
 
 # Feature Tabs
-tab_overview, tab_habits, tab_nlp, tab_semantic, tab_collage = st.tabs([
+tab_overview, tab_habits, tab_semantic = st.tabs([
     "📊 Profile Overview",
     "📅 Viewing Habits",
-    "📝 Review NLP Analysis",
-    "🔍 Semantic Mood Search",
-    "🖼️ Poster Collage Export"
+    "🔍 Semantic Mood Search"
 ])
 
 # ----------------------------------------------------
@@ -103,43 +101,7 @@ with tab_habits:
         st.plotly_chart(fig_m, use_container_width=True)
 
 
-# ----------------------------------------------------
-# TAB 4: Review Sentiment & Keyword Extraction (NLP)
-# ----------------------------------------------------
-with tab_nlp:
-    st.subheader("Written Review NLP Analysis")
-    reviewed_df = df[df['Review'].str.strip() != '']
-    
-    if reviewed_df.empty:
-        st.info("No text reviews found in your upload bundle.")
-    else:
-        nlp_c1, nlp_c2 = st.columns([1, 1])
-        
-        with nlp_c1:
-            st.write(f"**Sentiment Polarity vs. Star Rating** ({len(reviewed_df)} reviews)")
-            fig_sent = px.scatter(
-                reviewed_df, 
-                x='Rating', 
-                y='Sentiment_Polarity', 
-                hover_data=['Name', 'Director'],
-                color='Rating',
-                color_continuous_scale='Bluered'
-            )
-            fig_sent.update_layout(height=350, margin=dict(l=10, r=10, t=20, b=10))
-            st.plotly_chart(fig_sent, use_container_width=True)
-            
-        with nlp_c2:
-            st.write("**Top Characteristic Review Vocabulary**")
-            vec = TfidfVectorizer(stop_words='english', max_features=10)
-            tfidf_mat = vec.fit_transform(reviewed_df['Review'])
-            words_df = pd.DataFrame({
-                'Keyword': vec.get_feature_names_out(),
-                'TF-IDF Importance': tfidf_mat.toarray().sum(axis=0)
-            }).sort_values(by='TF-IDF Importance', ascending=True)
-            
-            fig_words = px.bar(words_df, x='TF-IDF Importance', y='Keyword', orientation='h', color_discrete_sequence=['#a855f7'])
-            fig_words.update_layout(height=350, margin=dict(l=10, r=10, t=20, b=10))
-            st.plotly_chart(fig_words, use_container_width=True)
+
 
 # ----------------------------------------------------
 # TAB 5: Semantic Mood Search across Watchlist
@@ -174,32 +136,3 @@ with tab_semantic:
                     st.metric("Vibe Match", f"{mov['syn_match']}%")
                     with st.expander("Synopsis"):
                         st.write(mov['Overview'] or "No synopsis available.")
-
-# ----------------------------------------------------
-# TAB 6: Poster Collage Exporter
-# ----------------------------------------------------
-with tab_collage:
-    st.subheader("High-Resolution Poster Grid Exporter")
-    st.caption("Generate an exportable 3x3 graphic of your highest-rated cinema.")
-    
-    top_posters = df[df['Rating'] >= 4.0].sort_values(by='Rating', ascending=False)['Poster'].dropna().tolist()
-    
-    if len(top_posters) < 9:
-        top_posters = df['Poster'].dropna().tolist()
-        
-    if len(top_posters) < 9:
-        st.warning("Need at least 9 valid posters with TMDb metadata to render a full 3x3 grid.")
-    else:
-        if st.button("Render 3x3 Poster Grid"):
-            with st.spinner("Stitching posters..."):
-                collage = generate_poster_collage(top_posters, cols=3, rows=3)
-                if collage:
-                    st.image(collage, caption="Your 3x3 Cinema Grid", use_container_width=True)
-                    buf = io.BytesIO()
-                    collage.save(buf, format="PNG")
-                    st.download_button(
-                        label="⬇️ Download Poster Grid (PNG)",
-                        data=buf.getvalue(),
-                        file_name="cinemetrics_grid.png",
-                        mime="image/png"
-                    )
