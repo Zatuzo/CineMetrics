@@ -1,6 +1,6 @@
 // src/components/UploadModal.jsx
 import React, { useState } from 'react';
-import { X, Upload, CheckCircle2, RotateCcw, Film } from 'lucide-react';
+import { X, Upload, CheckCircle2, RotateCcw } from 'lucide-react';
 import { processLetterboxdFiles } from '../services/csvParser';
 
 export default function UploadModal({ isOpen, onClose, onDataLoaded, onResetDemo }) {
@@ -14,7 +14,7 @@ export default function UploadModal({ isOpen, onClose, onDataLoaded, onResetDemo
   const handleFiles = async (files) => {
     if (!files || files.length === 0) return;
     setIsProcessing(true);
-    setStatusMsg('Reading Letterboxd CSVs and syncing archive...');
+    setStatusMsg('Importing Letterboxd data...');
 
     try {
       const { diary, watchlist } = await processLetterboxdFiles(files, (pct) => {
@@ -23,18 +23,18 @@ export default function UploadModal({ isOpen, onClose, onDataLoaded, onResetDemo
 
       if (diary.length > 0 || watchlist.length > 0) {
         onDataLoaded(diary, watchlist);
-        setStatusMsg(`Imported ${diary.length} diary screenings & ${watchlist.length} watchlist titles!`);
+        setStatusMsg(`Imported ${diary.length} diary films & ${watchlist.length} watchlist items.`);
         setTimeout(() => {
           setIsProcessing(false);
           onClose();
-        }, 1000);
+        }, 800);
       } else {
-        setStatusMsg('No valid diary or watchlist rows found in selected CSVs.');
+        setStatusMsg('No valid rows found in selected CSV files.');
         setIsProcessing(false);
       }
     } catch (err) {
       console.error(err);
-      setStatusMsg('Error processing files. Please upload Letterboxd export CSVs.');
+      setStatusMsg('Error reading files. Please upload Letterboxd export CSVs.');
       setIsProcessing(false);
     }
   };
@@ -50,29 +50,29 @@ export default function UploadModal({ isOpen, onClose, onDataLoaded, onResetDemo
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: '800' }}>📥 Import Letterboxd Archive</h2>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+          <h2 style={{ fontSize: '16px', fontWeight: '700' }}>Sync Letterboxd</h2>
           <button
             onClick={onClose}
-            style={{ background: 'transparent', border: 'none', color: '#fda4af', cursor: 'pointer' }}
+            style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
           >
-            <X size={18} />
+            <X size={16} />
           </button>
         </div>
 
-        <p style={{ color: '#fda4af', fontSize: '13px', marginBottom: '18px', lineHeight: 1.5 }}>
-          Export your Letterboxd archive (Settings &rarr; Import & Export) and drop your <b>diary.csv</b>, <b>ratings.csv</b>, and <b>watchlist.csv</b>.
+        <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '16px', lineHeight: 1.4 }}>
+          Upload your Letterboxd export files (e.g. <b>diary.csv</b>, <b>ratings.csv</b>, <b>watchlist.csv</b>).
         </p>
 
         {/* Dropzone */}
         <div
           style={{
-            border: `2px dashed ${dragActive ? '#e11d48' : 'rgba(225, 29, 72, 0.25)'}`,
-            borderRadius: '10px',
-            padding: '32px 18px',
+            border: `1px dashed ${dragActive ? 'var(--accent-red)' : 'var(--border-subtle)'}`,
+            borderRadius: 'var(--radius-sm)',
+            padding: '28px 16px',
             textAlign: 'center',
-            background: dragActive ? 'rgba(225, 29, 72, 0.08)' : 'rgba(225, 29, 72, 0.02)',
-            transition: 'all 0.2s ease',
+            background: dragActive ? 'var(--accent-red-subtle)' : 'var(--bg-card)',
+            transition: 'all 0.15s ease',
             cursor: 'pointer'
           }}
           onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
@@ -89,58 +89,58 @@ export default function UploadModal({ isOpen, onClose, onDataLoaded, onResetDemo
             onChange={(e) => handleFiles(Array.from(e.target.files))}
           />
           <div style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '50%',
-            background: 'rgba(225, 29, 72, 0.15)',
-            color: '#e11d48',
+            width: '40px',
+            height: '40px',
+            borderRadius: 'var(--radius-sm)',
+            background: 'var(--bg-surface)',
+            color: 'var(--accent-red)',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
-            marginBottom: '12px'
+            marginBottom: '10px'
           }}>
-            <Film size={22} />
+            <Upload size={18} />
           </div>
-          <div style={{ fontSize: '14px', fontWeight: '700', color: '#fff1f2', marginBottom: '3px' }}>
-            Drop Letterboxd CSVs here (Instant Import)
+          <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '2px' }}>
+            Click or drag Letterboxd CSVs here
           </div>
-          <div style={{ fontSize: '11px', color: '#9f7580' }}>
-            Supports diary.csv, ratings.csv, reviews.csv, watchlist.csv
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+            Instant parsing for diary.csv, ratings.csv, watchlist.csv
           </div>
         </div>
 
         {/* Progress bar */}
         {isProcessing && (
-          <div style={{ marginTop: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#fda4af', marginBottom: '4px' }}>
+          <div style={{ marginTop: '14px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px' }}>
               <span>{statusMsg}</span>
               <span>{progress}%</span>
             </div>
-            <div style={{ width: '100%', height: '5px', background: 'rgba(255, 255, 255, 0.08)', borderRadius: '9999px', overflow: 'hidden' }}>
-              <div style={{ width: `${progress}%`, height: '100%', background: '#e11d48', transition: 'width 0.2s ease' }} />
+            <div style={{ width: '100%', height: '4px', background: 'var(--bg-card)', borderRadius: '2px', overflow: 'hidden' }}>
+              <div style={{ width: `${progress}%`, height: '100%', background: 'var(--accent-red)', transition: 'width 0.15s ease' }} />
             </div>
           </div>
         )}
 
         {statusMsg && !isProcessing && (
-          <div style={{ marginTop: '14px', fontSize: '12px', color: '#10b981', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <CheckCircle2 size={15} />
+          <div style={{ marginTop: '12px', fontSize: '12px', color: 'var(--accent-red)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <CheckCircle2 size={14} />
             <span>{statusMsg}</span>
           </div>
         )}
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px', borderTop: '1px solid rgba(225, 29, 72, 0.15)', paddingTop: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', borderTop: '1px solid var(--border-subtle)', paddingTop: '14px' }}>
           <button
             type="button"
             className="btn-secondary"
-            style={{ fontSize: '12px', padding: '6px 12px' }}
+            style={{ fontSize: '11px', padding: '5px 10px' }}
             onClick={() => {
               onResetDemo();
               onClose();
             }}
           >
-            <RotateCcw size={13} />
-            <span>Load Sample Archive</span>
+            <RotateCcw size={12} />
+            <span>Load Demo Data</span>
           </button>
 
           <button type="button" className="btn-secondary" onClick={onClose}>

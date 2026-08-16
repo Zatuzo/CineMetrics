@@ -1,6 +1,6 @@
 // src/views/SemanticView.jsx
 import React, { useState, useMemo } from 'react';
-import { Compass, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
+import { Compass, ChevronDown, ChevronUp } from 'lucide-react';
 import { searchWatchlistByVibe } from '../services/semanticSearch';
 
 export default function SemanticView({ watchlist, onSelectMovie }) {
@@ -10,9 +10,9 @@ export default function SemanticView({ watchlist, onSelectMovie }) {
   const vibePresets = [
     'atmospheric psychological neo noir',
     'futuristic mind bending sci-fi',
-    'heartbreaking melancholy romance',
-    'gritty crime investigation',
-    'meditative poetic slow burn'
+    'melancholy romantic drama',
+    'gritty crime thriller',
+    'poetic slow burn'
   ];
 
   const results = useMemo(() => {
@@ -21,29 +21,27 @@ export default function SemanticView({ watchlist, onSelectMovie }) {
 
   return (
     <div>
-      <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '26px', fontWeight: '800' }}>🔍 The Mood Screening Room</h1>
-        <p style={{ color: '#fda4af', fontSize: '13px' }}>
-          Discover what to screen from your watchlist by describing the exact cinematic mood, pacing, or aesthetic.
+      <div style={{ marginBottom: '20px' }}>
+        <h1 style={{ fontSize: '20px', fontWeight: '800' }}>Vibe Search</h1>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
+          Search your watchlist using descriptive mood phrases and cinematic aesthetics.
         </p>
       </div>
 
       {/* Query Search Bar */}
-      <div style={{ marginBottom: '14px' }}>
+      <div style={{ marginBottom: '10px' }}>
         <div style={{ position: 'relative' }}>
-          <Compass size={17} style={{ position: 'absolute', left: '16px', top: '15px', color: '#e11d48' }} />
+          <Compass size={15} style={{ position: 'absolute', left: '12px', top: '13px', color: 'var(--text-muted)' }} />
           <input
             type="text"
             className="form-input"
             style={{
-              paddingLeft: '44px',
-              height: '46px',
-              fontSize: '14px',
-              borderRadius: '6px',
-              background: 'rgba(255, 255, 255, 0.04)',
-              border: '1px solid rgba(225, 29, 72, 0.3)'
+              paddingLeft: '36px',
+              height: '40px',
+              fontSize: '13px',
+              borderRadius: 'var(--radius-sm)'
             }}
-            placeholder="Type a cinematic mood or aesthetic prompt..."
+            placeholder="Type a mood or plot prompt (e.g. atmospheric crime thriller in LA)..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
@@ -51,12 +49,12 @@ export default function SemanticView({ watchlist, onSelectMovie }) {
       </div>
 
       {/* Preset Vibe Chips */}
-      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '28px' }}>
+      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '24px' }}>
         {vibePresets.map(preset => (
           <button
             key={preset}
             className={query === preset ? 'btn-primary' : 'btn-secondary'}
-            style={{ fontSize: '12px', padding: '6px 12px' }}
+            style={{ fontSize: '11px', padding: '5px 10px' }}
             onClick={() => setQuery(preset)}
           >
             <span>{preset}</span>
@@ -66,15 +64,15 @@ export default function SemanticView({ watchlist, onSelectMovie }) {
 
       {/* Watchlist Vibe Matches */}
       {watchlist.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '50px 20px', background: 'var(--bg-card)', borderRadius: '12px' }}>
-          <Compass size={36} color="#9f7580" style={{ marginBottom: '10px' }} />
-          <h3 style={{ fontSize: '16px', color: '#fff1f2' }}>Your watchlist is empty</h3>
-          <p style={{ color: '#fda4af', fontSize: '13px', marginTop: '4px' }}>
-            Sync your Letterboxd <b>watchlist.csv</b> to screen by mood and vibe.
+        <div style={{ textAlign: 'center', padding: '48px 16px', background: 'var(--bg-card)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}>
+          <Compass size={28} color="var(--text-muted)" style={{ marginBottom: '8px' }} />
+          <h3 style={{ fontSize: '14px', color: 'var(--text-primary)' }}>Your watchlist is empty</h3>
+          <p style={{ color: 'var(--text-muted)', fontSize: '12px', marginTop: '2px' }}>
+            Sync your Letterboxd <b>watchlist.csv</b> to search unwatched film synopses by vibe.
           </p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '18px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '14px' }}>
           {results.map(movie => {
             const isExpanded = expandedId === movie.id;
             return (
@@ -83,55 +81,46 @@ export default function SemanticView({ watchlist, onSelectMovie }) {
                 style={{
                   background: 'var(--bg-card)',
                   border: '1px solid var(--border-subtle)',
-                  borderRadius: '10px',
-                  padding: '14px',
+                  borderRadius: 'var(--radius-sm)',
+                  padding: '12px',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '10px',
-                  transition: 'all 0.2s ease',
+                  gap: '8px',
+                  transition: 'background var(--transition-fast)',
                   cursor: 'pointer'
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(225, 29, 72, 0.45)';
-                  e.currentTarget.style.transform = 'translateY(-3px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--border-subtle)';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-card-hover)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'var(--bg-card)'}
                 onClick={() => onSelectMovie(movie)}
               >
-                <div style={{ display: 'flex', gap: '12px' }}>
+                <div style={{ display: 'flex', gap: '10px' }}>
                   <img
-                    src={movie.poster || 'https://via.placeholder.com/90x135/17090d/fda4af?text=Poster'}
+                    src={movie.poster || 'https://via.placeholder.com/90x135/181818/666666?text=Poster'}
                     alt={movie.name}
-                    style={{ width: '60px', height: '90px', objectFit: 'cover', borderRadius: '4px' }}
+                    style={{ width: '48px', height: '72px', objectFit: 'cover', borderRadius: '3px' }}
                   />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      background: 'rgba(225, 29, 72, 0.15)',
-                      color: '#fecdd3',
-                      border: '1px solid rgba(225, 29, 72, 0.3)',
-                      padding: '2px 7px',
-                      borderRadius: '4px',
+                      display: 'inline-block',
+                      background: 'var(--accent-red-subtle)',
+                      color: 'var(--accent-red)',
+                      padding: '1px 6px',
+                      borderRadius: '3px',
                       fontSize: '10px',
-                      fontWeight: '800',
-                      marginBottom: '4px'
+                      fontWeight: '700',
+                      marginBottom: '3px'
                     }}>
-                      <span>{movie.matchScore}% Match</span>
+                      {movie.matchScore}% Match
                     </div>
 
-                    <h3 style={{ fontFamily: "'Cinzel', serif", fontSize: '14px', fontWeight: '700', color: '#fff1f2', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <h3 style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {movie.name}
                     </h3>
-                    <div style={{ fontSize: '12px', color: '#fda4af', marginTop: '2px' }}>
-                      {movie.year} • {movie.director || 'Auteur'}
+                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '1px' }}>
+                      {movie.year} • {movie.director || 'Director'}
                     </div>
-                    <div style={{ fontSize: '11px', color: '#9f7580', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      🏷️ {movie.genre}
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {movie.genre}
                     </div>
                   </div>
                 </div>
@@ -139,11 +128,11 @@ export default function SemanticView({ watchlist, onSelectMovie }) {
                 {/* Synopsis Accordion */}
                 <div
                   style={{
-                    background: 'rgba(255, 255, 255, 0.02)',
-                    borderRadius: '4px',
-                    padding: '8px 10px',
-                    fontSize: '12px',
-                    color: '#fda4af',
+                    background: 'var(--bg-surface)',
+                    borderRadius: '3px',
+                    padding: '6px 8px',
+                    fontSize: '11px',
+                    color: 'var(--text-secondary)',
                     lineHeight: 1.4
                   }}
                   onClick={(e) => {
@@ -151,12 +140,12 @@ export default function SemanticView({ watchlist, onSelectMovie }) {
                     setExpandedId(isExpanded ? null : movie.id);
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontWeight: '600', color: '#fff1f2', marginBottom: isExpanded ? '4px' : 0 }}>
-                    <span>Plot Synopsis</span>
-                    {isExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontWeight: '600', color: 'var(--text-primary)' }}>
+                    <span>Synopsis</span>
+                    {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                   </div>
                   {isExpanded && (
-                    <div style={{ marginTop: '4px', color: '#fecdd3' }}>
+                    <div style={{ marginTop: '4px', color: 'var(--text-secondary)' }}>
                       {movie.overview || 'No synopsis available.'}
                     </div>
                   )}

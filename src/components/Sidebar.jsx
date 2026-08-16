@@ -1,22 +1,22 @@
 // src/components/Sidebar.jsx
 import React from 'react';
 import { 
-  Film, 
+  Home, 
   Sparkles, 
-  Clapperboard, 
+  Disc3, 
   Compass, 
-  BarChart3, 
-  Ticket,
-  Upload
+  BarChart2, 
+  Upload, 
+  Film
 } from 'lucide-react';
 
 export default function Sidebar({ currentTab, setTab, onOpenUpload, totalFilms = 0 }) {
   const navItems = [
-    { id: 'home', label: 'Now Showing', icon: Clapperboard },
-    { id: 'rewind', label: 'Monthly Reel', icon: Sparkles },
-    { id: 'mixes', label: 'Curated Double Features', icon: Film },
-    { id: 'semantic', label: 'Mood Screenings', icon: Compass },
-    { id: 'analytics', label: 'Theatre Ledger', icon: BarChart3 },
+    { id: 'home', label: 'Home', icon: Home },
+    { id: 'rewind', label: 'Monthly Rewind', icon: Sparkles },
+    { id: 'mixes', label: 'Cinema Mixes', icon: Disc3 },
+    { id: 'semantic', label: 'Vibe Search', icon: Compass },
+    { id: 'analytics', label: 'Analytics', icon: BarChart2 },
   ];
 
   return (
@@ -25,19 +25,14 @@ export default function Sidebar({ currentTab, setTab, onOpenUpload, totalFilms =
         {/* Brand Header */}
         <div className="brand-logo" onClick={() => setTab('home')}>
           <div className="brand-icon">
-            <Ticket size={20} strokeWidth={2.5} />
+            <Film size={16} strokeWidth={2.5} />
           </div>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <span className="brand-text">CINEFY</span>
-              <span className="brand-badge">THEATRE</span>
-            </div>
-          </div>
+          <span className="brand-text">Cinefy</span>
         </div>
 
         {/* Navigation Sections */}
         <div className="nav-section">
-          <div className="nav-label">Auditorium & Programme</div>
+          <div className="nav-label">Menu</div>
           {navItems.map(item => {
             const Icon = item.icon;
             const isActive = currentTab === item.id;
@@ -47,7 +42,7 @@ export default function Sidebar({ currentTab, setTab, onOpenUpload, totalFilms =
                 className={`nav-item ${isActive ? 'active' : ''}`}
                 onClick={() => setTab(item.id)}
               >
-                <Icon size={18} />
+                <Icon size={16} />
                 <span>{item.label}</span>
               </div>
             );
@@ -55,43 +50,24 @@ export default function Sidebar({ currentTab, setTab, onOpenUpload, totalFilms =
         </div>
 
         <div className="nav-section">
-          <div className="nav-label">Your Box Office</div>
+          <div className="nav-label">Data</div>
           <div
             className="nav-item"
             onClick={onOpenUpload}
           >
-            <Upload size={18} />
+            <Upload size={16} />
             <span>Sync Letterboxd</span>
           </div>
         </div>
       </div>
 
-      {/* Footer Profile / Sync Card */}
+      {/* Footer Stats */}
       <div className="sidebar-footer-card">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{
-            width: '32px',
-            height: '32px',
-            borderRadius: '6px',
-            background: 'linear-gradient(135deg, #e11d48 0%, #881337 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '13px',
-            fontWeight: 'bold',
-            color: '#fff1f2',
-            border: '1px solid rgba(255, 255, 255, 0.15)'
-          }}>
-            🎬
-          </div>
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{ fontSize: '13px', fontWeight: '700', color: '#fff1f2', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              Auditorium Diary
-            </div>
-            <div style={{ fontSize: '11px', color: '#fda4af' }}>
-              {totalFilms} films archived
-            </div>
-          </div>
+        <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>
+          Logged Films
+        </div>
+        <div style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)' }}>
+          {totalFilms} <span style={{ fontSize: '12px', fontWeight: '400', color: 'var(--text-muted)' }}>entries</span>
         </div>
       </div>
     </aside>

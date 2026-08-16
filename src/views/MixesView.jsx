@@ -1,7 +1,7 @@
 // src/views/MixesView.jsx
 import React, { useState } from 'react';
 import { buildCinemaMixes } from '../services/mixEngine';
-import { Film, Star, Clapperboard } from 'lucide-react';
+import { Star, Film } from 'lucide-react';
 
 export default function MixesView({ diary, onSelectMovie, activeMix: initialActiveMix = null }) {
   const mixes = buildCinemaMixes(diary, 6);
@@ -9,11 +9,11 @@ export default function MixesView({ diary, onSelectMovie, activeMix: initialActi
 
   if (mixes.length === 0) {
     return (
-      <div style={{ textAlign: 'center', padding: '60px 20px', background: 'var(--bg-card)', borderRadius: '12px' }}>
-        <Film size={36} color="#e11d48" style={{ marginBottom: '10px' }} />
-        <h3 style={{ fontSize: '16px', color: '#fff1f2' }}>Log more films to curate Double Features</h3>
-        <p style={{ color: '#fda4af', fontSize: '13px', marginTop: '4px' }}>
-          Programmes unlock automatically once you log at least 2 screenings per genre.
+      <div style={{ textAlign: 'center', padding: '48px 16px', background: 'var(--bg-card)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}>
+        <Film size={28} color="var(--text-muted)" style={{ marginBottom: '8px' }} />
+        <h3 style={{ fontSize: '14px', color: 'var(--text-primary)' }}>Log more films across diverse genres</h3>
+        <p style={{ color: 'var(--text-muted)', fontSize: '12px', marginTop: '2px' }}>
+          Mixes unlock once you log at least 2 films in a specific genre.
         </p>
       </div>
     );
@@ -24,15 +24,15 @@ export default function MixesView({ diary, onSelectMovie, activeMix: initialActi
   return (
     <div>
       {/* Header */}
-      <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '26px', fontWeight: '800' }}>🎬 Curated Double Features & Programmes</h1>
-        <p style={{ color: '#fda4af', fontSize: '13px' }}>
-          Thematic cinema bills curated by genre and auteur signatures.
+      <div style={{ marginBottom: '20px' }}>
+        <h1 style={{ fontSize: '20px', fontWeight: '800' }}>Cinema Mixes</h1>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
+          Personalized playlists blending your top genres and director staples.
         </p>
       </div>
 
-      {/* Mix selector cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '14px', marginBottom: '32px' }}>
+      {/* Mix Selector Pills */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '10px', marginBottom: '24px' }}>
         {mixes.map(mix => {
           const isSelected = currentMix?.id === mix.id;
           return (
@@ -40,101 +40,80 @@ export default function MixesView({ diary, onSelectMovie, activeMix: initialActi
               key={mix.id}
               style={{
                 background: isSelected ? 'var(--bg-card-hover)' : 'var(--bg-card)',
-                border: `1px solid ${isSelected ? '#e11d48' : 'var(--border-subtle)'}`,
-                borderRadius: '8px',
-                padding: '14px',
+                border: `1px solid ${isSelected ? 'var(--accent-red-border)' : 'var(--border-subtle)'}`,
+                borderRadius: 'var(--radius-sm)',
+                padding: '12px',
                 cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                boxShadow: isSelected ? '0 0 16px rgba(225, 29, 72, 0.25)' : 'none'
+                transition: 'background var(--transition-fast)'
               }}
               onClick={() => setSelectedMix(mix)}
             >
-              <div style={{ height: '3px', width: '28px', background: '#e11d48', borderRadius: '9999px', marginBottom: '8px' }} />
-              <div style={{ fontFamily: "'Cinzel', serif", fontSize: '14px', fontWeight: '700', color: '#fff1f2', marginBottom: '3px' }}>{mix.title}</div>
-              <div style={{ fontSize: '11px', color: '#fda4af' }}>{mix.films.length} curated masterclasses</div>
+              <div style={{ fontSize: '13px', fontWeight: '600', color: isSelected ? 'var(--accent-red)' : 'var(--text-primary)', marginBottom: '2px' }}>
+                {mix.title}
+              </div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                {mix.films.length} films
+              </div>
             </div>
           );
         })}
       </div>
 
-      {/* Selected Programme Details */}
+      {/* Mix Details Table */}
       {currentMix && (
         <div style={{
-          background: 'linear-gradient(135deg, rgba(38, 14, 20, 0.8) 0%, rgba(15, 5, 8, 0.98) 100%)',
+          background: 'var(--bg-card)',
           border: '1px solid var(--border-subtle)',
-          borderRadius: '14px',
-          padding: '24px',
-          boxShadow: 'var(--shadow-lg)'
+          borderRadius: 'var(--radius-md)',
+          padding: '20px'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '18px', marginBottom: '20px', flexWrap: 'wrap' }}>
-            <div style={{
-              width: '68px',
-              height: '68px',
-              borderRadius: '10px',
-              background: 'linear-gradient(135deg, #e11d48 0%, #4c0519 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 6px 18px rgba(225, 29, 72, 0.3)',
-              color: '#ffffff'
-            }}>
-              <Clapperboard size={32} />
-            </div>
-            <div>
-              <span style={{ fontSize: '10px', fontWeight: '800', textTransform: 'uppercase', color: '#e11d48', letterSpacing: '0.06em' }}>
-                THEATRE PROGRAMME
-              </span>
-              <h2 style={{ fontFamily: "'Cinzel', serif", fontSize: '26px', fontWeight: '800', color: '#fff1f2', margin: '3px 0' }}>{currentMix.title}</h2>
-              <p style={{ color: '#fda4af', fontSize: '13px', maxWidth: '600px' }}>{currentMix.description}</p>
-            </div>
+          <div style={{ marginBottom: '18px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '3px' }}>
+              {currentMix.title}
+            </h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>
+              {currentMix.description}
+            </p>
           </div>
 
-          {/* Programme film list */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {/* Table */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             {currentMix.films.map((film, idx) => (
               <div
                 key={film.id}
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: '30px 48px 1fr 140px 80px',
+                  gridTemplateColumns: '24px 40px 1fr 140px 70px',
                   alignItems: 'center',
-                  padding: '10px 14px',
-                  borderRadius: '6px',
-                  background: 'rgba(255, 255, 255, 0.02)',
-                  border: '1px solid transparent',
+                  padding: '8px 10px',
+                  borderRadius: 'var(--radius-sm)',
                   cursor: 'pointer',
-                  transition: 'all 0.15s ease',
+                  transition: 'background var(--transition-fast)',
                   gap: '12px'
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(225, 29, 72, 0.08)';
-                  e.currentTarget.style.borderColor = 'rgba(225, 29, 72, 0.3)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.02)';
-                  e.currentTarget.style.borderColor = 'transparent';
-                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-card-hover)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                 onClick={() => onSelectMovie(film)}
               >
-                <div style={{ color: '#9f7580', fontSize: '12px', fontWeight: '700' }}>#{idx + 1}</div>
+                <div style={{ color: 'var(--text-muted)', fontSize: '11px', fontWeight: '600' }}>#{idx + 1}</div>
                 <img
-                  src={film.poster || 'https://via.placeholder.com/60x90/17090d/fda4af?text=Poster'}
+                  src={film.poster || 'https://via.placeholder.com/60x90/181818/666666?text=Poster'}
                   alt={film.name}
-                  style={{ width: '38px', height: '56px', objectFit: 'cover', borderRadius: '4px' }}
+                  style={{ width: '32px', height: '48px', objectFit: 'cover', borderRadius: '3px' }}
                 />
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontFamily: "'Cinzel', serif", fontSize: '14px', fontWeight: '700', color: '#fff1f2', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {film.name}
                   </div>
-                  <div style={{ fontSize: '12px', color: '#fda4af' }}>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                     {film.year} • {film.genre}
                   </div>
                 </div>
-                <div style={{ fontSize: '12px', color: '#fda4af', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {film.director || 'Auteur'}
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {film.director || 'Director'}
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#fbbf24', fontWeight: '700', fontSize: '13px', justifyContent: 'flex-end' }}>
-                  <Star size={12} fill="#fbbf24" />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '3px', color: 'var(--accent-gold)', fontWeight: '600', fontSize: '12px', justifyContent: 'flex-end' }}>
+                  <Star size={11} fill="currentColor" />
                   <span>{film.rating ? Number(film.rating).toFixed(1) : 'Logged'}</span>
                 </div>
               </div>

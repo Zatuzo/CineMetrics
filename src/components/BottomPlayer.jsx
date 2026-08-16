@@ -1,14 +1,13 @@
 // src/components/BottomPlayer.jsx
 import React from 'react';
-import { Film, Star, Ticket, Sparkles } from 'lucide-react';
+import { Star, Plus } from 'lucide-react';
 
 export default function BottomPlayer({ activeMovie, onOpenQuickLog }) {
   if (!activeMovie) {
     return (
       <footer className="bottom-dock">
-        <div style={{ color: '#9f7580', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Film size={16} color="#e11d48" />
-          <span>Select any film card in the auditorium to inspect notes, director credits, and ratings.</span>
+        <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
+          Select any film to view metadata and log notes.
         </div>
         <div />
         <div />
@@ -16,65 +15,64 @@ export default function BottomPlayer({ activeMovie, onOpenQuickLog }) {
     );
   }
 
-  const ratingStr = activeMovie.rating ? `★ ${Number(activeMovie.rating).toFixed(1)}` : 'Archived';
+  const ratingStr = activeMovie.rating ? `★ ${Number(activeMovie.rating).toFixed(1)}` : 'Logged';
 
   return (
     <footer className="bottom-dock">
       {/* Left: Active Film Info */}
       <div className="dock-film-info">
         <img
-          src={activeMovie.poster || 'https://via.placeholder.com/92x138/17090d/fda4af?text=Poster'}
+          src={activeMovie.poster || 'https://via.placeholder.com/92x138/181818/666666?text=Poster'}
           alt={activeMovie.name}
           className="dock-thumb"
         />
         <div className="dock-details">
           <div className="dock-title">{activeMovie.name}</div>
           <div className="dock-meta">
-            {activeMovie.year} • {activeMovie.director || 'Auteur'} • {activeMovie.genre || 'Cinema'}
+            {activeMovie.year} • {activeMovie.director || 'Director'} • {activeMovie.genre || 'Cinema'}
           </div>
         </div>
       </div>
 
-      {/* Center: Rating & Screening Notes */}
+      {/* Center: Rating & Notes */}
       <div className="dock-center">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span style={{
-            background: 'rgba(245, 158, 11, 0.15)',
-            color: '#fbbf24',
-            padding: '2px 10px',
-            borderRadius: '4px',
-            fontSize: '12px',
-            fontWeight: '700',
-            border: '1px solid rgba(245, 158, 11, 0.3)'
+            background: 'var(--accent-gold-subtle)',
+            color: 'var(--accent-gold)',
+            padding: '2px 8px',
+            borderRadius: 'var(--radius-sm)',
+            fontSize: '11px',
+            fontWeight: '600'
           }}>
             {ratingStr}
           </span>
-          <span style={{ fontSize: '12px', color: '#fda4af' }}>
-            {activeMovie.runtime ? `⏱️ ${activeMovie.runtime} min screening` : 'Feature Film'}
+          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+            {activeMovie.runtime ? `${activeMovie.runtime} min` : 'Feature'}
           </span>
         </div>
         <div style={{
-          fontSize: '12px',
-          color: '#9f7580',
-          maxWidth: '480px',
+          fontSize: '11px',
+          color: 'var(--text-muted)',
+          maxWidth: '440px',
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           textAlign: 'center'
         }}>
-          {activeMovie.overview || activeMovie.review || 'Screening logged in personal cinema archive.'}
+          {activeMovie.overview || activeMovie.review || 'No additional synopsis available.'}
         </div>
       </div>
 
       {/* Right: Actions */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
         <button
           className="btn-secondary"
-          style={{ padding: '6px 12px', fontSize: '12px' }}
+          style={{ padding: '5px 10px', fontSize: '11px' }}
           onClick={() => onOpenQuickLog(activeMovie)}
         >
-          <Ticket size={13} />
-          <span>Edit Screening</span>
+          <Plus size={12} />
+          <span>Edit / Review</span>
         </button>
       </div>
     </footer>

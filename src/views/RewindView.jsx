@@ -41,7 +41,7 @@ export default function RewindView({ diary, onSelectMovie }) {
       dirs.forEach(d => { dirCounts[d] = (dirCounts[d] || 0) + 1; });
     }
   });
-  const topDirector = Object.keys(dirCounts).sort((a, b) => dirCounts[b] - dirCounts[a])[0] || 'Various Auteurs';
+  const topDirector = Object.keys(dirCounts).sort((a, b) => dirCounts[b] - dirCounts[a])[0] || 'Various';
 
   // Top Genres
   const genreCounts = {};
@@ -71,15 +71,15 @@ export default function RewindView({ diary, onSelectMovie }) {
       });
 
       confetti({
-        particleCount: 70,
-        spread: 60,
+        particleCount: 50,
+        spread: 50,
         origin: { y: 0.6 }
       });
 
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `cinemetrics_${selectedMonth}_reel.png`;
+      link.download = `cinemetrics_${selectedMonth}_rewind.png`;
       link.click();
       URL.revokeObjectURL(url);
     } catch (err) {
@@ -91,22 +91,22 @@ export default function RewindView({ diary, onSelectMovie }) {
 
   return (
     <div>
-      {/* Month Selection Bar */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '14px' }}>
+      {/* Header & Month Selector */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          <h1 style={{ fontSize: '26px', fontWeight: '800' }}>🎞️ Monthly Theatre Retrospective Reel</h1>
-          <p style={{ color: '#fda4af', fontSize: '13px' }}>
-            A curated monthly retrospective of your viewing velocity, marquee highlights, and top auteurs.
+          <h1 style={{ fontSize: '20px', fontWeight: '800' }}>Monthly Rewind</h1>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
+            Retrospective breakdown of your viewing diary and top films.
           </p>
         </div>
 
-        {/* Month Selector Pills */}
+        {/* Month Pills */}
         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
           {months.map(m => (
             <button
               key={m}
               className={selectedMonth === m ? 'btn-primary' : 'btn-secondary'}
-              style={{ fontSize: '12px', padding: '6px 12px' }}
+              style={{ fontSize: '11px', padding: '5px 10px' }}
               onClick={() => setSelectedMonth(m)}
             >
               {m}
@@ -116,44 +116,33 @@ export default function RewindView({ diary, onSelectMovie }) {
       </div>
 
       {monthFilms.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '60px 20px', background: 'var(--bg-card)', borderRadius: '12px' }}>
-          <Film size={36} color="#9f7580" style={{ marginBottom: '10px' }} />
-          <h3 style={{ fontSize: '16px', color: '#fff1f2' }}>No screenings logged for {selectedMonth}</h3>
-          <p style={{ color: '#fda4af', fontSize: '13px', marginTop: '4px' }}>
-            Log screenings in the box office to view monthly retrospectives.
+        <div style={{ textAlign: 'center', padding: '48px 16px', background: 'var(--bg-card)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}>
+          <Film size={28} color="var(--text-muted)" style={{ marginBottom: '8px' }} />
+          <h3 style={{ fontSize: '14px', color: 'var(--text-primary)' }}>No films logged for {selectedMonth}</h3>
+          <p style={{ color: 'var(--text-muted)', fontSize: '12px', marginTop: '2px' }}>
+            Upload your Letterboxd export or log entries to view monthly statistics.
           </p>
         </div>
       ) : (
         <>
-          {/* Persona Reel Banner */}
+          {/* Persona Card */}
           <div style={{
-            background: 'linear-gradient(135deg, rgba(76, 5, 25, 0.6) 0%, rgba(15, 5, 8, 0.98) 100%)',
-            border: '1px solid rgba(225, 29, 72, 0.4)',
-            borderRadius: '16px',
-            padding: '26px',
-            marginBottom: '32px',
-            boxShadow: '0 12px 36px rgba(0,0,0,0.6)'
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: 'var(--radius-md)',
+            padding: '22px',
+            marginBottom: '28px'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '14px' }}>
               <div>
-                <span style={{
-                  background: 'rgba(225, 29, 72, 0.2)',
-                  color: '#fecdd3',
-                  border: '1px solid rgba(225, 29, 72, 0.4)',
-                  padding: '3px 10px',
-                  borderRadius: '4px',
-                  fontWeight: '800',
-                  fontSize: '10px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.06em'
-                }}>
-                  MONTHLY AUDITORIUM PROGRAMME
+                <span className="hero-tag">
+                  {selectedMonth} REWIND
                 </span>
-                <h2 style={{ fontFamily: "'Cinzel', serif", fontSize: '30px', fontWeight: '800', color: '#fbbf24', marginTop: '8px', marginBottom: '4px' }}>
-                  🎬 {persona}
+                <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'var(--text-primary)', marginTop: '4px', marginBottom: '2px' }}>
+                  {persona}
                 </h2>
-                <p style={{ color: '#fda4af', fontSize: '13px' }}>
-                  Your signature aesthetic identity for <b>{selectedMonth}</b>.
+                <p style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
+                  Your primary viewing character for <b>{selectedMonth}</b>.
                 </p>
               </div>
 
@@ -162,50 +151,50 @@ export default function RewindView({ diary, onSelectMovie }) {
                 onClick={handleExportStory}
                 disabled={isExporting}
               >
-                <Download size={15} />
-                <span>{isExporting ? 'Rendering Reel...' : 'Export 9:16 Story Card'}</span>
+                <Download size={13} />
+                <span>{isExporting ? 'Rendering...' : 'Download Story Card (PNG)'}</span>
               </button>
             </div>
 
             {/* KPI Grid */}
-            <div className="hero-kpis" style={{ marginTop: '20px' }}>
+            <div className="hero-kpis" style={{ marginTop: '16px' }}>
               <div className="kpi-tile">
-                <div className="kpi-label">⏱️ Screen Time</div>
-                <div className="kpi-value" style={{ color: '#e11d48' }}>{totalHours.toFixed(1)} hrs</div>
+                <div className="kpi-label">Watch Time</div>
+                <div className="kpi-value" style={{ color: 'var(--accent-red)' }}>{totalHours.toFixed(1)} hrs</div>
               </div>
               <div className="kpi-tile">
-                <div className="kpi-label">🍿 Screenings Logged</div>
-                <div className="kpi-value" style={{ color: '#fff1f2' }}>{totalFilms} films</div>
+                <div className="kpi-label">Films Logged</div>
+                <div className="kpi-value">{totalFilms}</div>
               </div>
               <div className="kpi-tile">
-                <div className="kpi-label">★ Mean Rating</div>
-                <div className="kpi-value" style={{ color: '#fbbf24' }}>{meanRating ? `★ ${meanRating.toFixed(2)}` : 'N/A'}</div>
+                <div className="kpi-label">Mean Rating</div>
+                <div className="kpi-value" style={{ color: 'var(--accent-gold)' }}>{meanRating ? `★ ${meanRating.toFixed(2)}` : 'N/A'}</div>
               </div>
               <div className="kpi-tile">
-                <div className="kpi-label">📅 Peak Rhythm</div>
-                <div className="kpi-value" style={{ color: '#f43f5e' }}>{peakDay}</div>
+                <div className="kpi-label">Peak Day</div>
+                <div className="kpi-value" style={{ fontSize: '15px' }}>{peakDay}</div>
               </div>
             </div>
           </div>
 
-          {/* Top Films Podium */}
+          {/* Top Films */}
           <div className="section-container">
             <div className="section-header">
               <div>
-                <h2 className="section-title">🏆 Top Screenings of {selectedMonth}</h2>
-                <p className="section-subtitle">The highest-rated films in this monthly reel.</p>
+                <h2 className="section-title">Top Films of {selectedMonth}</h2>
+                <p className="section-subtitle">Your highest-rated watches in this period.</p>
               </div>
             </div>
 
-            <div className="media-rail" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}>
+            <div className="media-rail" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
               {topFilms.map((film, idx) => {
-                const awards = ['🥇 Palme d\'Or', '🥈 Grand Prix', '🥉 Jury Prize'];
+                const ranks = ['#1 Ranked', '#2 Ranked', '#3 Ranked'];
                 return (
                   <MovieCard
                     key={film.id}
                     movie={film}
                     onSelect={onSelectMovie}
-                    badge={awards[idx]}
+                    badge={ranks[idx]}
                   />
                 );
               })}
