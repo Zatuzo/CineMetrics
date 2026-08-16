@@ -47,6 +47,43 @@ def fetch_tmdb_metadata(movie_name, year=None):
     except Exception:
         return "Unknown Director", "Cinema", None
 
+# In data_pipeline.py
+
+def load_watchlist_data(uploaded_files=None):
+    """Finds and enriches watchlist.csv from the uploaded batch."""
+    if not uploaded_files:
+        return pd.DataFrame()
+    
+    watchlist_file = None
+    for f in uploaded_files:
+        if 'watchlist' in f.name.lower():
+            watchlist_file = f
+            break
+            
+    if not watchlist_file:
+        return pd.DataFrame()
+        
+    df_watch = pd.read_csv(watchlist_file)
+    df_watch['Year'] = pd.to_numeric(df_watch['Year'], errors='coerce')
+    
+    # Enrich watchlist titles with TMDb metadata
+    if TMDB_API_KEY:
+        directors, genres, posters = [], [], []
+        for _, row in df_watch.iterrows():
+            d, g, p = fetch_tmdb_metadata(row['Name'], row.get('Year'))
+            directors.append(d)
+            genres.append(g)
+            posters.append(p)
+            
+        df_watch['Director'] = directors
+        df_watch['Genre'] = genres
+        df_watch['Poster'] = posters
+    else:
+        df_watch['Director'] = 'Unknown'
+        df_watch['Genre'] = 'Cinema'
+        df_watch['Poster'] = None
+        
+    return df_watch
 
 def load_letterboxd_bundle(uploaded_files=None):
     if not uploaded_files:
