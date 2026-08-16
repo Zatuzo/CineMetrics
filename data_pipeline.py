@@ -76,6 +76,7 @@ def safe_read_csv(file_obj):
         except Exception:
             return pd.DataFrame()
 
+@st.cache_data(show_spinner="Processing Letterboxd watchlist...")
 def load_watchlist_data(uploaded_files=None):
     """Finds and enriches watchlist.csv from the uploaded batch."""
     if not uploaded_files:
@@ -98,12 +99,16 @@ def load_watchlist_data(uploaded_files=None):
     # Enrich watchlist titles with TMDb metadata
     if TMDB_API_KEY:
         directors, genres, posters = [], [], []
-        for _, row in df_watch.iterrows():
+        prog = st.progress(0, text="Fetching watchlist details from TMDb...")
+        total = len(df_watch)
+        for i, row in df_watch.iterrows():
             d, g, p = fetch_tmdb_metadata(row['Name'], row.get('Year'))
             directors.append(d)
             genres.append(g)
             posters.append(p)
-            
+            prog.progress((i + 1) / total)
+        prog.empty()
+        
         df_watch['Director'] = directors
         df_watch['Genre'] = genres
         df_watch['Poster'] = posters
@@ -114,6 +119,7 @@ def load_watchlist_data(uploaded_files=None):
         
     return df_watch
 
+@st.cache_data(show_spinner="Processing Letterboxd logs...")
 def load_letterboxd_bundle(uploaded_files=None):
     if not uploaded_files:
         return get_starter_dataset()
