@@ -42,11 +42,11 @@ export default function Topbar({ onOpenQuickLog, onOpenUpload, onSelectMovie }) 
     <header className="topbar">
       {/* Live TMDb Search Bar */}
       <div className="search-bar-container" ref={dropdownRef}>
-        <Search className="search-icon" size={15} />
+        <Search className="search-icon" size={14} />
         <input
           type="text"
           className="search-input"
-          placeholder="Search movies on TMDb..."
+          placeholder="Search movies..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onFocus={() => searchQuery && setIsOpen(true)}
@@ -97,7 +97,7 @@ export default function Topbar({ onOpenQuickLog, onOpenUpload, onSelectMovie }) 
                       poster: movie.posterUrl,
                       rating: movie.rating / 2,
                       overview: movie.overview,
-                      director: 'TMDb Auteur'
+                      director: ''
                     });
                     setIsOpen(false);
                     setSearchQuery('');
@@ -127,15 +127,15 @@ export default function Topbar({ onOpenQuickLog, onOpenUpload, onSelectMovie }) 
         )}
       </div>
 
-      {/* Topbar Actions */}
+      {/* Topbar Actions with minimal text */}
       <div className="topbar-actions">
         <button className="btn-secondary" onClick={onOpenUpload}>
           <Upload size={13} />
-          <span>Sync Letterboxd</span>
+          <span>Sync</span>
         </button>
         <button className="btn-primary" onClick={onOpenQuickLog}>
           <Plus size={14} />
-          <span>Log Film</span>
+          <span>Log</span>
         </button>
       </div>
     </header>

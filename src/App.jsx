@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
-import BottomPlayer from './components/BottomPlayer';
 import QuickLogModal from './components/QuickLogModal';
 import UploadModal from './components/UploadModal';
 
@@ -18,7 +17,6 @@ export default function App() {
   const [diary, setDiary] = useState(SAMPLE_DIARY);
   const [watchlist, setWatchlist] = useState(SAMPLE_WATCHLIST);
   const [currentTab, setCurrentTab] = useState('home');
-  const [activeMovie, setActiveMovie] = useState(SAMPLE_DIARY[0] || null);
   const [activeMix, setActiveMix] = useState(null);
 
   // Modals
@@ -28,13 +26,11 @@ export default function App() {
 
   const handleSaveFilm = (newFilm) => {
     setDiary(prev => [newFilm, ...prev]);
-    setActiveMovie(newFilm);
   };
 
   const handleDataLoaded = (newDiary, newWatchlist) => {
     if (newDiary && newDiary.length > 0) {
       setDiary(newDiary);
-      setActiveMovie(newDiary[0]);
     }
     if (newWatchlist && newWatchlist.length > 0) {
       setWatchlist(newWatchlist);
@@ -44,7 +40,6 @@ export default function App() {
   const handleResetDemo = () => {
     setDiary(SAMPLE_DIARY);
     setWatchlist(SAMPLE_WATCHLIST);
-    setActiveMovie(SAMPLE_DIARY[0]);
   };
 
   const handleOpenQuickLog = (film = null) => {
@@ -60,7 +55,7 @@ export default function App() {
   return (
     <div className="app-container">
       <div className="app-body">
-        {/* Left Spotify-style Navigation */}
+        {/* Left Navigation */}
         <Sidebar
           currentTab={currentTab}
           setTab={setCurrentTab}
@@ -73,9 +68,7 @@ export default function App() {
           <Topbar
             onOpenQuickLog={() => handleOpenQuickLog(null)}
             onOpenUpload={() => setIsUploadOpen(true)}
-            onSelectMovie={(m) => {
-              setActiveMovie(m);
-            }}
+            onSelectMovie={(m) => handleOpenQuickLog(m)}
           />
 
           <main className="main-stage">
@@ -83,7 +76,7 @@ export default function App() {
               <HomeView
                 diary={diary}
                 watchlist={watchlist}
-                onSelectMovie={setActiveMovie}
+                onSelectMovie={handleOpenQuickLog}
                 onSelectMix={handleSelectMix}
                 onNavigate={setCurrentTab}
               />
@@ -92,7 +85,7 @@ export default function App() {
             {currentTab === 'rewind' && (
               <RewindView
                 diary={diary}
-                onSelectMovie={setActiveMovie}
+                onSelectMovie={handleOpenQuickLog}
               />
             )}
 
@@ -100,7 +93,7 @@ export default function App() {
               <MixesView
                 diary={diary}
                 watchlist={watchlist}
-                onSelectMovie={setActiveMovie}
+                onSelectMovie={handleOpenQuickLog}
                 activeMix={activeMix}
               />
             )}
@@ -108,7 +101,7 @@ export default function App() {
             {currentTab === 'semantic' && (
               <SemanticView
                 watchlist={watchlist}
-                onSelectMovie={setActiveMovie}
+                onSelectMovie={handleOpenQuickLog}
               />
             )}
 
@@ -120,12 +113,6 @@ export default function App() {
           </main>
         </div>
       </div>
-
-      {/* Bottom Sticky Player / Inspector Dock */}
-      <BottomPlayer
-        activeMovie={activeMovie}
-        onOpenQuickLog={handleOpenQuickLog}
-      />
 
       {/* Modals */}
       <QuickLogModal

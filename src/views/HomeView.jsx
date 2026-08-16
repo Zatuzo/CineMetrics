@@ -1,11 +1,10 @@
 // src/views/HomeView.jsx
 import React, { useState, useEffect } from 'react';
-import HeroPersona from '../components/HeroPersona';
 import MovieCard from '../components/MovieCard';
 import PosterImage from '../components/PosterImage';
 import { calculateCinematicPersona } from '../data/personas';
 import { buildCinemaMixes, populateMixDiscoveries } from '../services/mixEngine';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Sparkles } from 'lucide-react';
 
 export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix, onNavigate }) {
   const persona = calculateCinematicPersona(diary);
@@ -26,55 +25,50 @@ export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix,
   const ratings = diary.filter(f => f.rating).map(f => f.rating);
   const meanRating = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : null;
 
-  // Filter out fake "Auteur" or unknown director entries
-  const dirCounts = {};
-  diary.forEach(f => {
-    if (f.director && f.director !== 'Unknown Director' && f.director !== 'Auteur' && f.director !== 'Unknown') {
-      const dirs = f.director.split(',').map(d => d.trim());
-      dirs.forEach(d => {
-        if (d && d !== 'Auteur' && d !== 'Unknown Director') {
-          dirCounts[d] = (dirCounts[d] || 0) + 1;
-        }
-      });
-    }
-  });
-
-  const sortedDirectors = Object.keys(dirCounts).sort((a, b) => dirCounts[b] - dirCounts[a]);
-  const topDirector = sortedDirectors[0] || 'Various';
-
   // Recent logs
   const recentFilms = [...diary].reverse().slice(0, 6);
 
-  // Top Directors list (clean real directors only)
-  const topDirectorsList = sortedDirectors.slice(0, 5).map(name => ({
-    name,
-    count: dirCounts[name]
-  }));
-
   return (
     <div>
-      {/* Hero Persona Banner */}
-      <HeroPersona
-        persona={persona}
-        totalHours={totalHours}
-        totalFilms={totalFilms}
-        meanRating={meanRating}
-        topDirector={topDirector}
-        monthName="Overall"
-      />
+      {/* 1. Recently Logged (Movies First!) */}
+      <div className="section-container">
+        <div className="section-header">
+          <div>
+            <h2 className="section-title">Recently Logged</h2>
+            <p className="section-subtitle">Latest entries in your diary.</p>
+          </div>
+          <button
+            className="btn-secondary"
+            onClick={() => onNavigate('rewind')}
+          >
+            <span>Rewind</span>
+            <ChevronRight size={13} />
+          </button>
+        </div>
 
-      {/* Cinema Mixes Rail */}
+        <div className="media-rail">
+          {recentFilms.map(film => (
+            <MovieCard
+              key={film.id}
+              movie={film}
+              onSelect={onSelectMovie}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* 2. Cinema Mixes */}
       <div className="section-container">
         <div className="section-header">
           <div>
             <h2 className="section-title">Cinema Mixes</h2>
-            <p className="section-subtitle">Unwatched recommendations and watchlist gems based on your top genres.</p>
+            <p className="section-subtitle">Unwatched recommendations based on your favorite genres.</p>
           </div>
           <button
             className="btn-secondary"
             onClick={() => onNavigate('mixes')}
           >
-            <span>View all</span>
+            <span>All Mixes</span>
             <ChevronRight size={13} />
           </button>
         </div>
@@ -90,7 +84,7 @@ export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix,
               <div className="mix-card-title">{mix.title}</div>
               <div className="mix-card-desc">{mix.description}</div>
 
-              {/* 4 Poster Thumbnail Strip with PosterImage fallback */}
+              {/* 4 Poster Thumbnail Strip */}
               <div className="mix-poster-strip">
                 {mix.films.slice(0, 4).map((film, idx) => (
                   <div key={film.id || idx} style={{ width: '100%', aspectRatio: '2/3' }}>
@@ -108,94 +102,56 @@ export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix,
         </div>
       </div>
 
-      {/* Recently Logged Rail */}
-      <div className="section-container">
-        <div className="section-header">
-          <div>
-            <h2 className="section-title">Recently Logged</h2>
-            <p className="section-subtitle">Latest entries added to your diary.</p>
+      {/* 3. Sleek Compact Persona Profile (Neatly placed below movies) */}
+      <div style={{
+        background: 'var(--bg-card)',
+        border: '1px solid var(--border-subtle)',
+        borderRadius: 'var(--radius-sm)',
+        padding: '16px 20px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '16px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{
+            width: '36px',
+            height: '36px',
+            borderRadius: 'var(--radius-sm)',
+            background: 'var(--accent-red-subtle)',
+            color: 'var(--accent-red)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <Sparkles size={18} />
           </div>
-          <button
-            className="btn-secondary"
-            onClick={() => onNavigate('rewind')}
-          >
-            <span>Monthly Rewind</span>
-            <ChevronRight size={13} />
-          </button>
-        </div>
-
-        <div className="media-rail">
-          {recentFilms.map(film => (
-            <MovieCard
-              key={film.id}
-              movie={film}
-              onSelect={onSelectMovie}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Top Directors In Rotation */}
-      {topDirectorsList.length > 0 && (
-        <div className="section-container">
-          <div className="section-header">
-            <div>
-              <h2 className="section-title">Top Directors</h2>
-              <p className="section-subtitle">Most logged directors in your watch history.</p>
+          <div>
+            <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--accent-red)' }}>
+              Cinematic Profile
+            </div>
+            <div style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-primary)' }}>
+              {persona}
             </div>
           </div>
+        </div>
 
-          <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '4px' }}>
-            {topDirectorsList.map((d) => (
-              <div
-                key={d.name}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  background: 'var(--bg-card)',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: 'var(--radius-sm)',
-                  padding: '10px 14px',
-                  cursor: 'pointer',
-                  minWidth: '180px',
-                  transition: 'background var(--transition-fast)'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-card-hover)'}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'var(--bg-card)'}
-                onClick={() => {
-                  const firstFilm = diary.find(f => f.director && f.director.includes(d.name));
-                  if (firstFilm) onSelectMovie(firstFilm);
-                }}
-              >
-                <div style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '50%',
-                  background: 'var(--bg-surface)',
-                  border: '1px solid var(--border-subtle)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '13px',
-                  fontWeight: '700',
-                  color: 'var(--text-primary)'
-                }}>
-                  {d.name.charAt(0)}
-                </div>
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>
-                    {d.name}
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                    {d.count} films
-                  </div>
-                </div>
-              </div>
-            ))}
+        <div style={{ display: 'flex', gap: '20px' }}>
+          <div>
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Watch Time</div>
+            <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--accent-red)' }}>{totalHours.toFixed(1)} hrs</div>
+          </div>
+          <div>
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Diary</div>
+            <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-primary)' }}>{totalFilms} films</div>
+          </div>
+          <div>
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Avg Rating</div>
+            <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--accent-gold)' }}>★ {meanRating ? meanRating.toFixed(2) : 'N/A'}</div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
