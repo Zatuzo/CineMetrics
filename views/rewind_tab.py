@@ -6,7 +6,7 @@ from modules.personas import get_cinematic_persona
 from modules.story_card import generate_rewind_story_card
 
 def render_rewind_tab(df: pd.DataFrame):
-    """Renders the Monthly Rewind (Spotify Wrapped Style) tab."""
+    """Renders the Monthly Rewind (Spotify Wrapped Style) tab and story card export."""
     st.subheader("📼 Monthly Rewind")
     st.caption("A Spotify Wrapped–style monthly retrospective of your cinema diary, top directors, and watch time.")
 

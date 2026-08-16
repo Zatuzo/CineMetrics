@@ -2,7 +2,7 @@
 import requests
 import pandas as pd
 import streamlit as st
-from config import TMDB_API_KEY, TMDB_SEARCH_URL, TMDB_MOVIE_URL, TMDB_IMAGE_BASE_URL
+from config import TMDB_API_KEY, TMDB_BASE_URL, TMDB_IMAGE_BASE
 
 @st.cache_data(show_spinner=False)
 def fetch_tmdb_metadata(movie_name, year=None):
@@ -10,12 +10,13 @@ def fetch_tmdb_metadata(movie_name, year=None):
     if not TMDB_API_KEY:
         return "Unknown Director", "Cinema", "", None, 110
     
+    search_url = f"{TMDB_BASE_URL}/search/movie"
     params = {"api_key": TMDB_API_KEY, "query": movie_name}
     if pd.notna(year):
         params["year"] = int(year)
         
     try:
-        r = requests.get(TMDB_SEARCH_URL, params=params, timeout=5).json()
+        r = requests.get(search_url, params=params, timeout=5).json()
         results = r.get("results", [])
         if not results:
             return "Unknown Director", "Cinema", "", None, 110
@@ -23,9 +24,9 @@ def fetch_tmdb_metadata(movie_name, year=None):
         movie_id = results[0]["id"]
         overview = results[0].get("overview", "")
         poster_path = results[0].get("poster_path")
-        poster_url = f"{TMDB_IMAGE_BASE_URL}{poster_path}" if poster_path else None
+        poster_url = f"{TMDB_IMAGE_BASE}{poster_path}" if poster_path else None
         
-        detail_url = f"{TMDB_MOVIE_URL}/{movie_id}"
+        detail_url = f"{TMDB_BASE_URL}/movie/{movie_id}"
         detail_res = requests.get(
             detail_url, 
             params={"api_key": TMDB_API_KEY, "append_to_response": "credits"}, 

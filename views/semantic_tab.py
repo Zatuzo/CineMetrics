@@ -1,7 +1,8 @@
 # views/semantic_tab.py
 import pandas as pd
 import streamlit as st
-from modules.search import search_watchlist_by_vibe
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 def render_semantic_tab(df_watch: pd.DataFrame):
     """Renders the Semantic Mood Search tab across unwatched watchlist films."""
@@ -15,7 +16,16 @@ def render_semantic_tab(df_watch: pd.DataFrame):
     query_text = st.text_input("Enter cinematic vibe or plot prompt:", value="atmospheric psychological neo noir")
     
     if query_text.strip():
-        top_matches = search_watchlist_by_vibe(df_watch, query_text, top_n=4)
+        watch_synopses = df_watch['Overview'].fillna('') + " " + df_watch['Genre'].fillna('')
+        tfidf_syn = TfidfVectorizer(stop_words='english')
+        tfidf_matrix_syn = tfidf_syn.fit_transform(watch_synopses)
+        
+        q_vec = tfidf_syn.transform([query_text])
+        scores = cosine_similarity(q_vec, tfidf_matrix_syn)[0]
+        
+        df_scored = df_watch.copy()
+        df_scored['syn_match'] = (scores * 100).round(1)
+        top_matches = df_scored.sort_values(by='syn_match', ascending=False).head(4)
         
         if top_matches.empty:
             st.info("No matching films found in watchlist.")

@@ -1,9 +1,8 @@
 # config.py
 
 TMDB_API_KEY = "76a327a724de6563297b5a4d68a6fcc4"
-TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500"
-TMDB_SEARCH_URL = "https://api.themoviedb.org/3/search/movie"
-TMDB_MOVIE_URL = "https://api.themoviedb.org/3/movie"
+TMDB_BASE_URL = "https://api.themoviedb.org/3"
+TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w500"
 
 # Mapping from dominant genres to persona titles
 GENRE_PERSONAS = {
@@ -23,5 +22,5 @@ GENRE_PERSONAS = {
     'Documentary': 'Realist Truth Seeker'
 }
 
-# Calendar and distribution orders
+# Calendar distribution order
 DAY_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']

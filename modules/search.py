@@ -1,21 +1,46 @@
 # modules/search.py
-import pandas as pd
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
+import requests
+import streamlit as st
+from config import TMDB_API_KEY, TMDB_BASE_URL, TMDB_IMAGE_BASE
 
-def search_watchlist_by_vibe(df_watch, query_text, top_n=4):
-    """Calculates TF-IDF cosine similarity scores matching a mood/vibe query against watchlist synopses."""
-    if df_watch.empty or not query_text.strip():
-        return pd.DataFrame()
+@st.cache_data(show_spinner=False)
+def search_tmdb_movies(query: str, page: int = 1):
+    """Performs an instant TMDb movie search returning structured movie objects."""
+    if not TMDB_API_KEY or not query or not query.strip():
+        return []
     
-    watch_synopses = df_watch['Overview'].fillna('') + " " + df_watch['Genre'].fillna('')
-    tfidf_syn = TfidfVectorizer(stop_words='english')
-    tfidf_matrix_syn = tfidf_syn.fit_transform(watch_synopses)
+    url = f"{TMDB_BASE_URL}/search/movie"
+    params = {
+        "api_key": TMDB_API_KEY,
+        "query": query.strip(),
+        "page": page,
+        "include_adult": False
+    }
     
-    q_vec = tfidf_syn.transform([query_text])
-    scores = cosine_similarity(q_vec, tfidf_matrix_syn)[0]
-    
-    df_result = df_watch.copy()
-    df_result['syn_match'] = (scores * 100).round(1)
-    
-    return df_result.sort_values(by='syn_match', ascending=False).head(top_n)
+    try:
+        response = requests.get(url, params=params, timeout=5)
+        response.raise_for_status()
+        data = response.json()
+        raw_results = data.get("results", [])
+        
+        movies = []
+        for item in raw_results:
+            release_date = item.get("release_date", "")
+            year = release_date.split("-")[0] if release_date else "N/A"
+            poster_path = item.get("poster_path")
+            poster_url = f"{TMDB_IMAGE_BASE}{poster_path}" if poster_path else None
+            
+            movies.append({
+                "id": item.get("id"),
+                "title": item.get("title") or item.get("original_title") or "Unknown Title",
+                "year": year,
+                "release_date": release_date,
+                "overview": item.get("overview", "No synopsis available."),
+                "rating": item.get("vote_average", 0.0),
+                "vote_count": item.get("vote_count", 0),
+                "poster_url": poster_url,
+                "popularity": item.get("popularity", 0.0)
+            })
+        return movies
+    except Exception:
+        return []

@@ -3,7 +3,7 @@ import pandas as pd
 import streamlit as st
 from textblob import TextBlob
 from config import TMDB_API_KEY
-from .tmdb import fetch_tmdb_metadata
+from modules.tmdb import fetch_tmdb_metadata
 
 
 def safe_read_csv(file_obj):

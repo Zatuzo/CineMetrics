@@ -1,19 +1,46 @@
 # app.py
 import streamlit as st
 import pandas as pd
+from datetime import datetime
+
 from modules.loaders import load_letterboxd_bundle, load_watchlist_data
-from views import (
-    render_rewind_tab,
-    render_mixes_tab,
-    render_overview_tab,
-    render_habits_tab,
-    render_semantic_tab,
-)
+from modules.search import search_tmdb_movies
+from views.rewind_tab import render_rewind_tab
+from views.mixes_tab import render_mixes_tab
+from views.overview_tab import render_overview_tab
+from views.habits_tab import render_habits_tab
+from views.semantic_tab import render_semantic_tab
 
 st.set_page_config(page_title="CineMetrics | Film Diary Engine", layout="wide", page_icon="🎬")
 
+# Title & Subheader
 st.title("🎬 CineMetrics — Personal Film Diary & Taste Engine")
 st.caption("Deep analytical breakdown of personal viewing logs, director distributions, and monthly rewind summaries.")
+
+# Quick Logger Drawer (Sidebar / Expander)
+with st.sidebar:
+    st.header("⚡ Quick Movie Logger")
+    st.caption("Search TMDb and preview film data.")
+    quick_query = st.text_input("Search movie title:", placeholder="e.g. Inception, Dune...", key="quick_search")
+    
+    if quick_query:
+        with st.spinner("Searching TMDb..."):
+            search_results = search_tmdb_movies(quick_query)
+            
+        if not search_results:
+            st.info("No matching films found.")
+        else:
+            for m in search_results[:3]:
+                st.markdown("---")
+                if m.get("poster_url"):
+                    st.image(m["poster_url"], width=100)
+                st.markdown(f"**{m['title']}** ({m['year']})")
+                st.caption(f"★ {m['rating']:.1f} • {m['vote_count']} votes")
+                with st.expander("Synopsis"):
+                    st.write(m["overview"])
+                log_rating = st.slider(f"Rate '{m['title']}':", 0.5, 5.0, 4.0, 0.5, key=f"rate_{m['id']}")
+                if st.button(f"➕ Log Film", key=f"btn_{m['id']}"):
+                    st.success(f"Logged **{m['title']}** (★ {log_rating})!")
 
 # File Uploader
 uploaded_files = st.file_uploader(
@@ -29,7 +56,7 @@ if df.empty:
     st.info("👋 Upload your Letterboxd CSV bundle to start exploring your personal analytics.")
     st.stop()
 
-# Top KPIs
+# Header KPIs
 k1, k2, k3, k4 = st.columns(4)
 k1.metric("Total Films Logged", len(df))
 k2.metric("Mean Rating", f"★ {df['Rating'].mean():.2f}")
