@@ -41,10 +41,9 @@ k4.metric("Top Director", top_dir[0] if not top_dir.empty else "N/A")
 st.markdown("---")
 
 # Feature Tabs
-tab_overview, tab_habits, tab_matrix, tab_nlp, tab_semantic, tab_collage = st.tabs([
+tab_overview, tab_habits, tab_nlp, tab_semantic, tab_collage = st.tabs([
     "📊 Profile Overview",
     "📅 Viewing Habits",
-    "🎯 Director Quadrant",
     "📝 Review NLP Analysis",
     "🔍 Semantic Mood Search",
     "🖼️ Poster Collage Export"
@@ -103,36 +102,6 @@ with tab_habits:
         fig_m.update_layout(height=320, margin=dict(l=10, r=10, t=20, b=10))
         st.plotly_chart(fig_m, use_container_width=True)
 
-# ----------------------------------------------------
-# TAB 3: Director Quadrant Matrix
-# ----------------------------------------------------
-with tab_matrix:
-    st.subheader("Director Quadrant Matrix (Volume vs. Rating)")
-    st.caption("Identify core favorites (top right), hidden gems (top left), and completionist traps (bottom right).")
-    
-    dir_quad = df[df['Director'] != 'Unknown Director'].groupby('Director').agg(
-        Total_Watched=('Name', 'count'),
-        Avg_Rating=('Rating', 'mean')
-    ).reset_index()
-    
-    fig_quad = px.scatter(
-        dir_quad, 
-        x='Total_Watched', 
-        y='Avg_Rating', 
-        text='Director',
-        size='Total_Watched',
-        color='Avg_Rating',
-        color_continuous_scale='Plasma',
-        hover_data=['Total_Watched', 'Avg_Rating']
-    )
-    fig_quad.update_traces(textposition='top center')
-    
-    mean_v = dir_quad['Total_Watched'].mean()
-    mean_r = dir_quad['Avg_Rating'].mean()
-    fig_quad.add_hline(y=mean_r, line_dash="dash", line_color="gray", annotation_text="Avg Rating")
-    fig_quad.add_vline(x=mean_v, line_dash="dash", line_color="gray", annotation_text="Avg Volume")
-    fig_quad.update_layout(height=480, margin=dict(l=10, r=10, t=30, b=10))
-    st.plotly_chart(fig_quad, use_container_width=True)
 
 # ----------------------------------------------------
 # TAB 4: Review Sentiment & Keyword Extraction (NLP)
