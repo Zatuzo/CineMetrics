@@ -75,85 +75,55 @@ if not df.empty:
         fig_dir.update_layout(height=350, margin=dict(l=10, r=10, t=20, b=10))
         st.plotly_chart(fig_dir, use_container_width=True)
 
-# ----------------------------------------------------
-# SMART WATCHLIST RECOMMENDER
-# ----------------------------------------------------
-st.markdown("---")
-st.subheader("🎯 Watchlist Matchmaker")
-
-if df_watch.empty:
-    st.info("💡 Upload your `watchlist.csv` file to enable smart un-watched film recommendations.")
-else:
-    st.caption(f"Scoring **{len(df_watch)}** unwatched films against your top-rated cinema profile.")
-    
-    # User selects a benchmark 5-star / favorite film
-    top_films = df[df['Rating'] >= 4.0]['Name'].unique()
-    if len(top_films) == 0:
-        top_films = df['Name'].unique()
-        
-    selected_favorite = st.selectbox("Pick a favorite film you love:", top_films)
-    
-    if selected_favorite:
-        # Build feature strings
-        df_watched_calc = df.copy()
-        df_watched_calc['features'] = df_watched_calc['Director'].fillna('') + " " + df_watched_calc['Genre'].fillna('')
-        
-        df_watch_calc = df_watch.copy()
-        df_watch_calc['features'] = df_watch_calc['Director'].fillna('') + " " + df_watch_calc['Genre'].fillna('')
-        
-        # Fit vectorizer across all known film text
-        all_features = pd.concat([df_watched_calc['features'], df_watch_calc['features']])
-        tfidf = TfidfVectorizer(stop_words='english')
-        tfidf.fit(all_features)
-        
-        fav_vec = tfidf.transform([df_watched_calc[df_watched_calc['Name'] == selected_favorite]['features'].iloc[0]])
-        watchlist_vecs = tfidf.transform(df_watch_calc['features'])
-        
-        sim_scores = cosine_similarity(fav_vec, watchlist_vecs)[0]
-        df_watch_calc['match_score'] = (sim_scores * 100).round(1)
-        
-        # Top 4 recommendations from watchlist
-        recs = df_watch_calc.sort_values(by='match_score', ascending=False).head(4)
-        
-        st.write(f"Top picks from your watchlist matching the style of **{selected_favorite}**:")
-        
-        cols = st.columns(4)
-        for idx, (_, movie) in enumerate(recs.iterrows()):
-            with cols[idx]:
-                if movie['Poster']:
-                    st.image(movie['Poster'], use_container_width=True)
-                st.markdown(f"**{movie['Name']}** ({int(movie['Year']) if pd.notna(movie['Year']) else 'N/A'})")
-                st.caption(f"🎬 {movie['Director']}\n\n🏷️ {movie['Genre']}")
-                st.metric("Taste Match", f"{movie['match_score']}%")
-
     # ----------------------------------------------------
-    # Recommendation Vector Engine Section
+    # SMART WATCHLIST RECOMMENDER
     # ----------------------------------------------------
     st.markdown("---")
-    st.subheader("🎯 Recommendation Vector Engine")
-    st.caption("Finds films from your log with the closest stylistic and thematic similarity.")
+    st.subheader("🎯 Watchlist Matchmaker")
 
-    selected_movie = st.selectbox("Pick a benchmark film from your history:", df['Name'].unique())
-
-    if selected_movie:
-        # Combine Director + Genres into a single feature vector string
-        df_calc = df.copy()
-        df_calc['features'] = df_calc['Director'].fillna('') + " " + df_calc['Genre'].fillna('')
-        
-        tfidf = TfidfVectorizer(stop_words='english')
-        tfidf_matrix = tfidf.fit_transform(df_calc['features'])
-        
-        target_idx = df_calc[df_calc['Name'] == selected_movie].index[0]
-        sim_scores = list(enumerate(cosine_similarity(tfidf_matrix[target_idx], tfidf_matrix)[0]))
-        
-        # Sort and take top 3 matches (excluding the movie itself at rank 0)
-        sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)[1:4]
-        
-        rec_indices = [i[0] for i in sim_scores]
-        recommendations = df.iloc[rec_indices][['Name', 'Director', 'Year', 'Genre', 'Rating']]
-        
-        st.write(f"Films stylistically closest to **{selected_movie}**:")
-        # Using newer 'width' argument where available, otherwise fallback is handled
-        st.dataframe(recommendations, use_container_width=True, hide_index=True)
+    if df_watch.empty:
+        st.info("💡 Upload your `watchlist.csv` file to enable smart un-watched film recommendations.")
     else:
-        st.info("Upload your Letterboxd export CSVs above to begin analysis.")
+        st.caption(f"Scoring **{len(df_watch)}** unwatched films against your top-rated cinema profile.")
+        
+        # User selects a benchmark 5-star / favorite film
+        top_films = df[df['Rating'] >= 4.0]['Name'].unique()
+        if len(top_films) == 0:
+            top_films = df['Name'].unique()
+            
+        selected_favorite = st.selectbox("Pick a favorite film you love:", top_films)
+        
+        if selected_favorite:
+            # Build feature strings
+            df_watched_calc = df.copy()
+            df_watched_calc['features'] = df_watched_calc['Director'].fillna('') + " " + df_watched_calc['Genre'].fillna('')
+            
+            df_watch_calc = df_watch.copy()
+            df_watch_calc['features'] = df_watch_calc['Director'].fillna('') + " " + df_watch_calc['Genre'].fillna('')
+            
+            # Fit vectorizer across all known film text
+            all_features = pd.concat([df_watched_calc['features'], df_watch_calc['features']])
+            tfidf = TfidfVectorizer(stop_words='english')
+            tfidf.fit(all_features)
+            
+            fav_vec = tfidf.transform([df_watched_calc[df_watched_calc['Name'] == selected_favorite]['features'].iloc[0]])
+            watchlist_vecs = tfidf.transform(df_watch_calc['features'])
+            
+            sim_scores = cosine_similarity(fav_vec, watchlist_vecs)[0]
+            df_watch_calc['match_score'] = (sim_scores * 100).round(1)
+            
+            # Top 4 recommendations from watchlist
+            recs = df_watch_calc.sort_values(by='match_score', ascending=False).head(4)
+            
+            st.write(f"Top picks from your watchlist matching the style of **{selected_favorite}**:")
+            
+            cols = st.columns(4)
+            for idx, (_, movie) in enumerate(recs.iterrows()):
+                with cols[idx]:
+                    if movie['Poster']:
+                        st.image(movie['Poster'], use_container_width=True)
+                    st.markdown(f"**{movie['Name']}** ({int(movie['Year']) if pd.notna(movie['Year']) else 'N/A'})")
+                    st.caption(f"🎬 {movie['Director']}\n\n🏷️ {movie['Genre']}")
+                    st.metric("Taste Match", f"{movie['match_score']}%")
+else:
+    st.info("Upload your Letterboxd export CSVs above to begin analysis.")
