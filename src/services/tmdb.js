@@ -1,7 +1,29 @@
 // src/services/tmdb.js
 import { TMDB_API_KEY, TMDB_BASE_URL, TMDB_IMAGE_BASE } from '../config';
 
-const CACHE_KEY = 'cinefy_tmdb_cache_v1';
+const CACHE_KEY = 'cinefy_tmdb_cache_v2';
+
+const GENRE_ID_MAP = {
+  'Action': 28,
+  'Adventure': 12,
+  'Animation': 16,
+  'Comedy': 35,
+  'Crime': 80,
+  'Documentary': 99,
+  'Drama': 18,
+  'Family': 10751,
+  'Fantasy': 14,
+  'History': 36,
+  'Horror': 27,
+  'Music': 10402,
+  'Mystery': 9648,
+  'Romance': 10749,
+  'Science Fiction': 878,
+  'Sci-Fi': 878,
+  'Thriller': 53,
+  'War': 10752,
+  'Western': 37
+};
 
 function getCache() {
   try {
@@ -55,15 +77,16 @@ export async function searchTMDbMovies(query) {
 
 export async function fetchMovieMetadataByName(name, year) {
   if (!name || !TMDB_API_KEY) {
-    return { director: 'Unknown Director', genre: 'Cinema', overview: '', poster: null, runtime: 110 };
+    return { director: '', genre: 'Cinema', overview: '', poster: null, runtime: 110 };
   }
 
-  const cacheKey = `meta_${name.toLowerCase()}_${year || ''}`;
+  const cleanName = name.trim().toLowerCase();
+  const cacheKey = `meta_${cleanName}_${year || ''}`;
   const cache = getCache();
   if (cache[cacheKey]) return cache[cacheKey];
 
   try {
-    let url = `${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(name)}`;
+    let url = `${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(name.trim())}`;
     if (year) url += `&year=${year}`;
     
     const res = await fetch(url);
@@ -71,7 +94,7 @@ export async function fetchMovieMetadataByName(name, year) {
     const data = await res.json();
     const firstMatch = (data.results || [])[0];
     if (!firstMatch) {
-      return { director: 'Unknown Director', genre: 'Cinema', overview: '', poster: null, runtime: 110 };
+      return { director: '', genre: 'Cinema', overview: '', poster: null, runtime: 110 };
     }
 
     const detailUrl = `${TMDB_BASE_URL}/movie/${firstMatch.id}?api_key=${TMDB_API_KEY}&append_to_response=credits`;
@@ -80,9 +103,9 @@ export async function fetchMovieMetadataByName(name, year) {
 
     const crew = detailData.credits?.crew || [];
     const directors = crew.filter(c => c.job === 'Director').map(c => c.name);
-    const director = directors.length > 0 ? directors.join(', ') : 'Unknown Director';
+    const director = directors.length > 0 ? directors.join(', ') : '';
     const genres = (detailData.genres || []).map(g => g.name).join(', ') || 'Cinema';
-    const poster = detailData.poster_path ? `${TMDB_IMAGE_BASE}${detailData.poster_path}` : null;
+    const poster = detailData.poster_path ? `${TMDB_IMAGE_BASE}${detailData.poster_path}` : (firstMatch.poster_path ? `${TMDB_IMAGE_BASE}${firstMatch.poster_path}` : null);
     const runtime = detailData.runtime || 110;
 
     const result = {
@@ -97,6 +120,39 @@ export async function fetchMovieMetadataByName(name, year) {
     setCache(cache);
     return result;
   } catch {
-    return { director: 'Unknown Director', genre: 'Cinema', overview: '', poster: null, runtime: 110 };
+    return { director: '', genre: 'Cinema', overview: '', poster: null, runtime: 110 };
+  }
+}
+
+export async function fetchDiscoverByGenre(genreName) {
+  if (!TMDB_API_KEY) return [];
+  const genreId = GENRE_ID_MAP[genreName] || 18;
+  const cacheKey = `discover_genre_${genreId}`;
+  const cache = getCache();
+  if (cache[cacheKey]) return cache[cacheKey];
+
+  try {
+    const url = `${TMDB_BASE_URL}/discover/movie?api_key=${TMDB_API_KEY}&with_genres=${genreId}&sort_by=popularity.desc&vote_count.gte=200&page=1`;
+    const res = await fetch(url);
+    if (!res.ok) return [];
+    const data = await res.json();
+
+    const results = (data.results || []).slice(0, 16).map(m => ({
+      id: m.id,
+      name: m.title || m.original_title,
+      year: m.release_date ? parseInt(m.release_date.split('-')[0]) : null,
+      director: '',
+      genre: genreName,
+      overview: m.overview || '',
+      rating: m.vote_average ? Number((m.vote_average / 2).toFixed(1)) : 4.0, // scale to 5.0
+      poster: m.poster_path ? `${TMDB_IMAGE_BASE}${m.poster_path}` : null,
+      runtime: 120
+    }));
+
+    cache[cacheKey] = results;
+    setCache(cache);
+    return results;
+  } catch {
+    return [];
   }
 }

@@ -109,8 +109,8 @@ export async function processLetterboxdFiles(files, onProgress) {
       dayOfWeek,
       rating,
       decade,
-      director: row['Director'] || 'Auteur',
-      genre: row['Genres'] || row['Genre'] || 'Cinema',
+      director: row['Director'] || '',
+      genre: row['Genres'] || row['Genre'] || '',
       overview: row['Overview'] || row['Review'] || '',
       poster: null,
       runtime: 115,
@@ -128,8 +128,8 @@ export async function processLetterboxdFiles(files, onProgress) {
       id: 1000 + i,
       name,
       year,
-      director: row['Director'] || 'Auteur',
-      genre: row['Genres'] || row['Genre'] || 'Cinema',
+      director: row['Director'] || '',
+      genre: row['Genres'] || row['Genre'] || '',
       overview: row['Overview'] || '',
       poster: null
     };
@@ -137,36 +137,40 @@ export async function processLetterboxdFiles(files, onProgress) {
 
   if (onProgress) onProgress(60);
 
-  // 3. Fast Parallel Enrichment for initial top 12 films so UI is instantly rich
-  const enrichCount = Math.min(diary.length, 12);
+  // 3. Fast Parallel Enrichment for initial top 24 films so UI is instantly rich
+  const enrichCount = Math.min(diary.length, 24);
   const enrichPromises = [];
 
   for (let i = 0; i < enrichCount; i++) {
     enrichPromises.push(
       fetchMovieMetadataByName(diary[i].name, diary[i].year).then(meta => {
-        diary[i].director = meta.director || diary[i].director;
-        diary[i].genre = meta.genre || diary[i].genre;
-        diary[i].overview = meta.overview || diary[i].overview;
-        diary[i].poster = meta.poster;
-        diary[i].runtime = meta.runtime || 115;
+        if (meta) {
+          diary[i].director = meta.director || diary[i].director;
+          diary[i].genre = meta.genre || diary[i].genre || 'Cinema';
+          diary[i].overview = meta.overview || diary[i].overview;
+          diary[i].poster = meta.poster;
+          diary[i].runtime = meta.runtime || 115;
+        }
       }).catch(() => {})
     );
   }
 
-  // Enrich first 8 watchlist items in parallel
-  const watchEnrichCount = Math.min(watchlist.length, 8);
+  // Enrich first 16 watchlist items in parallel
+  const watchEnrichCount = Math.min(watchlist.length, 16);
   for (let i = 0; i < watchEnrichCount; i++) {
     enrichPromises.push(
       fetchMovieMetadataByName(watchlist[i].name, watchlist[i].year).then(meta => {
-        watchlist[i].director = meta.director || watchlist[i].director;
-        watchlist[i].genre = meta.genre || watchlist[i].genre;
-        watchlist[i].overview = meta.overview || watchlist[i].overview;
-        watchlist[i].poster = meta.poster;
+        if (meta) {
+          watchlist[i].director = meta.director || watchlist[i].director;
+          watchlist[i].genre = meta.genre || watchlist[i].genre || 'Cinema';
+          watchlist[i].overview = meta.overview || watchlist[i].overview;
+          watchlist[i].poster = meta.poster;
+        }
       }).catch(() => {})
     );
   }
 
-  await Promise.all(enrichPromises);
+  await Promise.allSettled(enrichPromises);
 
   if (onProgress) onProgress(100);
 

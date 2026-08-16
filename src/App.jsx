@@ -82,6 +82,7 @@ export default function App() {
             {currentTab === 'home' && (
               <HomeView
                 diary={diary}
+                watchlist={watchlist}
                 onSelectMovie={setActiveMovie}
                 onSelectMix={handleSelectMix}
                 onNavigate={setCurrentTab}
@@ -98,6 +99,7 @@ export default function App() {
             {currentTab === 'mixes' && (
               <MixesView
                 diary={diary}
+                watchlist={watchlist}
                 onSelectMovie={setActiveMovie}
                 activeMix={activeMix}
               />

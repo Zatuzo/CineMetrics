@@ -36,17 +36,19 @@ export default function AnalyticsView({ diary }) {
   });
   const maxDayVal = Math.max(...Object.values(dayCounts), 1);
 
-  // Top Directors
+  // Top Directors (Clean real directors only)
   const dirMap = {};
   diary.forEach(f => {
-    if (f.director && f.director !== 'Unknown Director') {
+    if (f.director && f.director !== 'Unknown Director' && f.director !== 'Auteur' && f.director !== 'Unknown') {
       const dirs = f.director.split(',').map(d => d.trim());
       dirs.forEach(d => {
-        if (!dirMap[d]) dirMap[d] = { count: 0, totalRating: 0, ratingCount: 0 };
-        dirMap[d].count += 1;
-        if (f.rating) {
-          dirMap[d].totalRating += f.rating;
-          dirMap[d].ratingCount += 1;
+        if (d && d !== 'Auteur' && d !== 'Unknown Director') {
+          if (!dirMap[d]) dirMap[d] = { count: 0, totalRating: 0, ratingCount: 0 };
+          dirMap[d].count += 1;
+          if (f.rating) {
+            dirMap[d].totalRating += f.rating;
+            dirMap[d].ratingCount += 1;
+          }
         }
       });
     }

@@ -1,14 +1,23 @@
 // src/views/HomeView.jsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import HeroPersona from '../components/HeroPersona';
 import MovieCard from '../components/MovieCard';
+import PosterImage from '../components/PosterImage';
 import { calculateCinematicPersona } from '../data/personas';
-import { buildCinemaMixes } from '../services/mixEngine';
+import { buildCinemaMixes, populateMixDiscoveries } from '../services/mixEngine';
 import { ChevronRight } from 'lucide-react';
 
-export default function HomeView({ diary, onSelectMovie, onSelectMix, onNavigate }) {
+export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix, onNavigate }) {
   const persona = calculateCinematicPersona(diary);
-  const mixes = buildCinemaMixes(diary, 4);
+  const [mixes, setMixes] = useState(() => buildCinemaMixes(diary, watchlist, 4));
+
+  useEffect(() => {
+    const base = buildCinemaMixes(diary, watchlist, 4);
+    setMixes(base);
+    populateMixDiscoveries(base, diary).then(enriched => {
+      setMixes(enriched);
+    });
+  }, [diary, watchlist]);
 
   // Stats
   const totalFilms = diary.length;
@@ -17,27 +26,30 @@ export default function HomeView({ diary, onSelectMovie, onSelectMix, onNavigate
   const ratings = diary.filter(f => f.rating).map(f => f.rating);
   const meanRating = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : null;
 
-  // Top Director
+  // Filter out fake "Auteur" or unknown director entries
   const dirCounts = {};
   diary.forEach(f => {
-    if (f.director && f.director !== 'Unknown Director') {
+    if (f.director && f.director !== 'Unknown Director' && f.director !== 'Auteur' && f.director !== 'Unknown') {
       const dirs = f.director.split(',').map(d => d.trim());
-      dirs.forEach(d => { dirCounts[d] = (dirCounts[d] || 0) + 1; });
+      dirs.forEach(d => {
+        if (d && d !== 'Auteur' && d !== 'Unknown Director') {
+          dirCounts[d] = (dirCounts[d] || 0) + 1;
+        }
+      });
     }
   });
-  const topDirector = Object.keys(dirCounts).sort((a, b) => dirCounts[b] - dirCounts[a])[0] || 'Various';
+
+  const sortedDirectors = Object.keys(dirCounts).sort((a, b) => dirCounts[b] - dirCounts[a]);
+  const topDirector = sortedDirectors[0] || 'Various';
 
   // Recent logs
   const recentFilms = [...diary].reverse().slice(0, 6);
 
-  // Top Directors list
-  const topDirectorsList = Object.keys(dirCounts)
-    .sort((a, b) => dirCounts[b] - dirCounts[a])
-    .slice(0, 5)
-    .map(name => ({
-      name,
-      count: dirCounts[name]
-    }));
+  // Top Directors list (clean real directors only)
+  const topDirectorsList = sortedDirectors.slice(0, 5).map(name => ({
+    name,
+    count: dirCounts[name]
+  }));
 
   return (
     <div>
@@ -51,12 +63,12 @@ export default function HomeView({ diary, onSelectMovie, onSelectMix, onNavigate
         monthName="Overall"
       />
 
-      {/* Daily Mixes Rail */}
+      {/* Cinema Mixes Rail */}
       <div className="section-container">
         <div className="section-header">
           <div>
             <h2 className="section-title">Cinema Mixes</h2>
-            <p className="section-subtitle">Algorithmic film playlists based on your highest-rated genres.</p>
+            <p className="section-subtitle">Unwatched recommendations and watchlist gems based on your top genres.</p>
           </div>
           <button
             className="btn-secondary"
@@ -78,15 +90,17 @@ export default function HomeView({ diary, onSelectMovie, onSelectMix, onNavigate
               <div className="mix-card-title">{mix.title}</div>
               <div className="mix-card-desc">{mix.description}</div>
 
-              {/* 4 Poster Thumbnail Strip */}
+              {/* 4 Poster Thumbnail Strip with PosterImage fallback */}
               <div className="mix-poster-strip">
-                {mix.films.map(film => (
-                  <img
-                    key={film.id}
-                    src={film.poster || 'https://via.placeholder.com/60x90/181818/666666?text=Poster'}
-                    alt={film.name}
-                    className="mix-thumb"
-                  />
+                {mix.films.slice(0, 4).map((film, idx) => (
+                  <div key={film.id || idx} style={{ width: '100%', aspectRatio: '2/3' }}>
+                    <PosterImage
+                      src={film.poster}
+                      name={film.name}
+                      year={film.year}
+                      className="mix-thumb"
+                    />
+                  </div>
                 ))}
               </div>
             </div>
@@ -94,7 +108,7 @@ export default function HomeView({ diary, onSelectMovie, onSelectMix, onNavigate
         </div>
       </div>
 
-      {/* Recent Screenings Rail */}
+      {/* Recently Logged Rail */}
       <div className="section-container">
         <div className="section-header">
           <div>
@@ -127,7 +141,7 @@ export default function HomeView({ diary, onSelectMovie, onSelectMix, onNavigate
           <div className="section-header">
             <div>
               <h2 className="section-title">Top Directors</h2>
-              <p className="section-subtitle">Most logged auteurs in your watch history.</p>
+              <p className="section-subtitle">Most logged directors in your watch history.</p>
             </div>
           </div>
 
