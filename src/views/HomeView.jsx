@@ -4,7 +4,7 @@ import HeroPersona from '../components/HeroPersona';
 import MovieCard from '../components/MovieCard';
 import { calculateCinematicPersona } from '../data/personas';
 import { buildCinemaMixes } from '../services/mixEngine';
-import { ChevronRight, Disc3, Sparkles, Film, User } from 'lucide-react';
+import { ChevronRight, Film } from 'lucide-react';
 
 export default function HomeView({ diary, onSelectMovie, onSelectMix, onNavigate }) {
   const persona = calculateCinematicPersona(diary);
@@ -25,7 +25,7 @@ export default function HomeView({ diary, onSelectMovie, onSelectMix, onNavigate
       dirs.forEach(d => { dirCounts[d] = (dirCounts[d] || 0) + 1; });
     }
   });
-  const topDirector = Object.keys(dirCounts).sort((a, b) => dirCounts[b] - dirCounts[a])[0] || 'Auteur Variety';
+  const topDirector = Object.keys(dirCounts).sort((a, b) => dirCounts[b] - dirCounts[a])[0] || 'Various Auteurs';
 
   // Recent logs
   const recentFilms = [...diary].reverse().slice(0, 6);
@@ -48,23 +48,23 @@ export default function HomeView({ diary, onSelectMovie, onSelectMix, onNavigate
         totalFilms={totalFilms}
         meanRating={meanRating}
         topDirector={topDirector}
-        monthName="Taste Profile"
+        monthName="Current Repertoire"
       />
 
-      {/* Daily Mixes Rail */}
+      {/* Curated Double Features / Daily Mixes Rail */}
       <div className="section-container">
         <div className="section-header">
           <div>
-            <h2 className="section-title">🎧 Your Cinema Daily Mixes</h2>
-            <p className="section-subtitle">Algorithmic film blends personalized to your highest-rated genres.</p>
+            <h2 className="section-title">🎬 Curated Double Features & Programmes</h2>
+            <p className="section-subtitle">Algorithmic cinema reels tailored to your highest-rated genres.</p>
           </div>
           <button
             className="btn-secondary"
-            style={{ fontSize: '12px', padding: '6px 14px' }}
+            style={{ fontSize: '12px', padding: '6px 12px' }}
             onClick={() => onNavigate('mixes')}
           >
-            <span>See All Mixes</span>
-            <ChevronRight size={14} />
+            <span>All Programmes</span>
+            <ChevronRight size={13} />
           </button>
         </div>
 
@@ -75,7 +75,7 @@ export default function HomeView({ diary, onSelectMovie, onSelectMix, onNavigate
               className="mix-card"
               onClick={() => onSelectMix(mix)}
             >
-              <div className="mix-card-top-bar" style={{ background: mix.color }} />
+              <div className="mix-card-top-bar" style={{ background: '#e11d48' }} />
               <div className="mix-card-title">{mix.title}</div>
               <div className="mix-card-desc">{mix.description}</div>
 
@@ -84,7 +84,7 @@ export default function HomeView({ diary, onSelectMovie, onSelectMix, onNavigate
                 {mix.films.map(film => (
                   <img
                     key={film.id}
-                    src={film.poster || 'https://via.placeholder.com/60x90/182234/94a3b8?text=Poster'}
+                    src={film.poster || 'https://via.placeholder.com/60x90/17090d/fda4af?text=Poster'}
                     alt={film.name}
                     className="mix-thumb"
                   />
@@ -95,20 +95,20 @@ export default function HomeView({ diary, onSelectMovie, onSelectMix, onNavigate
         </div>
       </div>
 
-      {/* Recently Logged Film Rail */}
+      {/* Recent Screenings Reel */}
       <div className="section-container">
         <div className="section-header">
           <div>
-            <h2 className="section-title">🍿 Recent Diary Entries</h2>
-            <p className="section-subtitle">Your latest logged screenings, ratings, and thoughts.</p>
+            <h2 className="section-title">🎟️ Recent Screenings from the Diary</h2>
+            <p className="section-subtitle">Your latest logged screenings, reflections, and star ratings.</p>
           </div>
           <button
             className="btn-secondary"
-            style={{ fontSize: '12px', padding: '6px 14px' }}
+            style={{ fontSize: '12px', padding: '6px 12px' }}
             onClick={() => onNavigate('rewind')}
           >
-            <span>Monthly Wrapped</span>
-            <ChevronRight size={14} />
+            <span>Monthly Reel</span>
+            <ChevronRight size={13} />
           </button>
         </div>
 
@@ -123,18 +123,18 @@ export default function HomeView({ diary, onSelectMovie, onSelectMix, onNavigate
         </div>
       </div>
 
-      {/* Top Auteur Stations (Spotify Artist Circles) */}
+      {/* Top Auteurs in Rotation */}
       {topAuteurs.length > 0 && (
         <div className="section-container">
           <div className="section-header">
             <div>
-              <h2 className="section-title">🏆 Top Auteurs in Rotation</h2>
-              <p className="section-subtitle">The directors dominating your viewing sessions.</p>
+              <h2 className="section-title">🏆 Auteurs in the Auditorium Rotation</h2>
+              <p className="section-subtitle">Directors with the highest volume in your screenings.</p>
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '24px', overflowX: 'auto', paddingBottom: '10px' }}>
-            {topAuteurs.map((auteur, idx) => (
+          <div style={{ display: 'flex', gap: '20px', overflowX: 'auto', paddingBottom: '8px' }}>
+            {topAuteurs.map((auteur) => (
               <div
                 key={auteur.name}
                 style={{
@@ -144,14 +144,14 @@ export default function HomeView({ diary, onSelectMovie, onSelectMix, onNavigate
                   minWidth: '130px',
                   background: 'var(--bg-card)',
                   border: '1px solid var(--border-subtle)',
-                  borderRadius: '16px',
+                  borderRadius: '10px',
                   padding: '16px 12px',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.borderColor = '#38bdf8';
+                  e.currentTarget.style.transform = 'translateY(-3px)';
+                  e.currentTarget.style.borderColor = '#e11d48';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)';
@@ -163,26 +163,27 @@ export default function HomeView({ diary, onSelectMovie, onSelectMix, onNavigate
                 }}
               >
                 <div style={{
-                  width: '74px',
-                  height: '74px',
+                  width: '64px',
+                  height: '64px',
                   borderRadius: '50%',
-                  background: `linear-gradient(135deg, ${['#38bdf8', '#10b981', '#f59e0b', '#a855f7', '#f43f5e'][idx % 5]} 0%, #0f172a 100%)`,
+                  background: 'linear-gradient(135deg, #e11d48 0%, #4c0519 100%)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '24px',
+                  fontSize: '22px',
                   fontWeight: '800',
                   color: '#ffffff',
                   marginBottom: '10px',
-                  boxShadow: '0 6px 18px rgba(0,0,0,0.4)'
+                  boxShadow: '0 4px 14px rgba(225,29,72,0.3)',
+                  border: '1px solid rgba(255,255,255,0.15)'
                 }}>
                   {auteur.name.charAt(0)}
                 </div>
-                <div style={{ fontSize: '13px', fontWeight: '700', color: '#f8fafc', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '110px' }}>
+                <div style={{ fontFamily: "'Cinzel', serif", fontSize: '13px', fontWeight: '700', color: '#fff1f2', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '110px' }}>
                   {auteur.name}
                 </div>
-                <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
-                  {auteur.count} films logged
+                <div style={{ fontSize: '11px', color: '#fda4af', marginTop: '2px' }}>
+                  {auteur.count} screenings
                 </div>
               </div>
             ))}

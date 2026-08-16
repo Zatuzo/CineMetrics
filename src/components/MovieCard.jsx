@@ -1,6 +1,6 @@
 // src/components/MovieCard.jsx
 import React from 'react';
-import { Star, Play } from 'lucide-react';
+import { Star, Film } from 'lucide-react';
 
 export default function MovieCard({ movie, onSelect, badge = null }) {
   if (!movie) return null;
@@ -9,31 +9,32 @@ export default function MovieCard({ movie, onSelect, badge = null }) {
     <div className="media-card" onClick={() => onSelect(movie)}>
       <div className="poster-wrapper">
         <img
-          src={movie.poster || 'https://via.placeholder.com/300x450/141c2e/94a3b8?text=No+Poster'}
+          src={movie.poster || 'https://via.placeholder.com/300x450/17090d/fda4af?text=Poster'}
           alt={movie.name}
           className="poster-img"
           loading="lazy"
         />
 
-        {/* Floating play / inspect circle button */}
+        {/* Overlay inspect icon */}
         <div className="poster-overlay-play">
-          <Play size={18} fill="#07090e" stroke="#07090e" style={{ marginLeft: '2px' }} />
+          <Film size={16} fill="#ffffff" stroke="#ffffff" />
         </div>
 
-        {/* Optional rank or vibe match badge */}
+        {/* Optional rank or vibe badge */}
         {badge && (
           <div style={{
             position: 'absolute',
-            top: '8px',
-            left: '8px',
-            background: 'rgba(15, 23, 42, 0.85)',
+            top: '6px',
+            left: '6px',
+            background: 'rgba(15, 5, 8, 0.9)',
             backdropFilter: 'blur(8px)',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
-            borderRadius: '6px',
-            padding: '3px 8px',
-            fontSize: '11px',
+            border: '1px solid rgba(225, 29, 72, 0.4)',
+            borderRadius: '4px',
+            padding: '2px 7px',
+            fontSize: '10px',
             fontWeight: '800',
-            color: '#f8fafc'
+            color: '#fff1f2',
+            letterSpacing: '0.04em'
           }}>
             {badge}
           </div>
@@ -48,7 +49,7 @@ export default function MovieCard({ movie, onSelect, badge = null }) {
         <span>{movie.year || 'N/A'} • {movie.director ? movie.director.split(',')[0] : 'Auteur'}</span>
         {movie.rating && (
           <div className="star-rating">
-            <Star size={12} fill="#f59e0b" />
+            <Star size={11} fill="#fbbf24" />
             <span>{Number(movie.rating).toFixed(1)}</span>
           </div>
         )}

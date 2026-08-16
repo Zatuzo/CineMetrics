@@ -1,6 +1,6 @@
 // src/components/Topbar.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Plus, Upload, Film, Star } from 'lucide-react';
+import { Search, Ticket, Upload, Star } from 'lucide-react';
 import { searchTMDbMovies } from '../services/tmdb';
 
 export default function Topbar({ onOpenQuickLog, onOpenUpload, onSelectMovie }) {
@@ -42,11 +42,11 @@ export default function Topbar({ onOpenQuickLog, onOpenUpload, onSelectMovie }) 
     <header className="topbar">
       {/* Live TMDb Search Bar */}
       <div className="search-bar-container" ref={dropdownRef}>
-        <Search className="search-icon" size={18} />
+        <Search className="search-icon" size={17} />
         <input
           type="text"
           className="search-input"
-          placeholder="What do you want to watch or log? (Live TMDb Search)"
+          placeholder="Search films in the global marquee (TMDb)..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onFocus={() => searchQuery && setIsOpen(true)}
@@ -56,24 +56,24 @@ export default function Topbar({ onOpenQuickLog, onOpenUpload, onSelectMovie }) 
         {isOpen && (
           <div style={{
             position: 'absolute',
-            top: '48px',
+            top: '46px',
             left: 0,
             right: 0,
-            background: '#121824',
-            border: '1px solid rgba(56, 189, 248, 0.3)',
-            borderRadius: '14px',
-            boxShadow: '0 16px 36px rgba(0, 0, 0, 0.7)',
+            background: '#14090d',
+            border: '1px solid rgba(225, 29, 72, 0.4)',
+            borderRadius: '10px',
+            boxShadow: '0 16px 36px rgba(0, 0, 0, 0.8)',
             zIndex: 50,
             overflow: 'hidden',
             maxHeight: '360px',
             overflowY: 'auto'
           }}>
             {isSearching ? (
-              <div style={{ padding: '16px', textAlign: 'center', color: '#94a3b8', fontSize: '13px' }}>
-                Searching TMDb database...
+              <div style={{ padding: '16px', textAlign: 'center', color: '#fda4af', fontSize: '13px' }}>
+                Searching marquee database...
               </div>
             ) : searchResults.length === 0 ? (
-              <div style={{ padding: '16px', textAlign: 'center', color: '#94a3b8', fontSize: '13px' }}>
+              <div style={{ padding: '16px', textAlign: 'center', color: '#fda4af', fontSize: '13px' }}>
                 No films found matching "{searchQuery}"
               </div>
             ) : (
@@ -86,17 +86,17 @@ export default function Topbar({ onOpenQuickLog, onOpenUpload, onSelectMovie }) 
                     gap: '12px',
                     padding: '10px 14px',
                     cursor: 'pointer',
-                    borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+                    borderBottom: '1px solid rgba(225, 29, 72, 0.1)',
                     transition: 'background 0.15s ease'
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = '#1a2336'}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#260f15'}
                   onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                   onClick={() => {
                     onSelectMovie({
                       name: movie.title,
                       year: movie.year,
                       poster: movie.posterUrl,
-                      rating: movie.rating / 2, // convert 10 to 5
+                      rating: movie.rating / 2,
                       overview: movie.overview,
                       director: 'TMDb Auteur'
                     });
@@ -105,19 +105,19 @@ export default function Topbar({ onOpenQuickLog, onOpenUpload, onSelectMovie }) 
                   }}
                 >
                   <img
-                    src={movie.posterUrl || 'https://via.placeholder.com/92x138/182234/94a3b8?text=No+Poster'}
+                    src={movie.posterUrl || 'https://via.placeholder.com/92x138/17090d/fda4af?text=No+Poster'}
                     alt={movie.title}
                     style={{ width: '36px', height: '52px', objectFit: 'cover', borderRadius: '4px' }}
                   />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: '14px', fontWeight: '700', color: '#f8fafc', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <div style={{ fontFamily: "'Cinzel', serif", fontSize: '14px', fontWeight: '700', color: '#fff1f2', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {movie.title}
                     </div>
-                    <div style={{ fontSize: '12px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
+                    <div style={{ fontSize: '12px', color: '#fda4af', display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
                       <span>{movie.year}</span>
                       <span>•</span>
-                      <span style={{ color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '2px' }}>
-                        <Star size={11} fill="#f59e0b" /> {movie.rating}
+                      <span style={{ color: '#fbbf24', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                        <Star size={11} fill="#fbbf24" /> {movie.rating}
                       </span>
                     </div>
                   </div>
@@ -131,12 +131,12 @@ export default function Topbar({ onOpenQuickLog, onOpenUpload, onSelectMovie }) 
       {/* Topbar Actions */}
       <div className="topbar-actions">
         <button className="btn-secondary" onClick={onOpenUpload}>
-          <Upload size={15} />
+          <Upload size={14} />
           <span>Sync Letterboxd</span>
         </button>
         <button className="btn-primary" onClick={onOpenQuickLog}>
-          <Plus size={16} />
-          <span>Quick Log</span>
+          <Ticket size={15} />
+          <span>Log Screening</span>
         </button>
       </div>
     </header>

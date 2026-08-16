@@ -14,72 +14,73 @@ export async function generateStoryCardBlob({
   canvas.height = 1920;
   const ctx = canvas.getContext('2d');
 
-  // Background
+  // Deep Velvet Red Gradient Background
   const gradient = ctx.createLinearGradient(0, 0, 1080, 1920);
-  gradient.addColorStop(0, '#0b1120');
-  gradient.addColorStop(1, '#020617');
+  gradient.addColorStop(0, '#1c050a');
+  gradient.addColorStop(0.5, '#0e0306');
+  gradient.addColorStop(1, '#050102');
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, 1080, 1920);
 
-  // Cyan top highlight line
-  ctx.fillStyle = '#38bdf8';
-  ctx.fillRect(0, 0, 1080, 24);
+  // Crimson accent top banner
+  ctx.fillStyle = '#e11d48';
+  ctx.fillRect(0, 0, 1080, 20);
 
   // Top header branding
-  ctx.fillStyle = '#38bdf8';
-  ctx.font = 'bold 36px "Outfit", sans-serif';
-  ctx.fillText(`CINEMETRICS // ${monthYear.toUpperCase()} WRAPPED`, 80, 160);
+  ctx.fillStyle = '#e11d48';
+  ctx.font = 'bold 34px "Cinzel", Georgia, serif';
+  ctx.fillText(`CINEMETRICS // ${monthYear.toUpperCase()} THEATRE REEL`, 80, 160);
 
-  ctx.fillStyle = '#f8fafc';
-  ctx.font = 'bold 54px "Outfit", sans-serif';
-  ctx.fillText('Monthly Taste Capsule', 80, 230);
+  ctx.fillStyle = '#fff1f2';
+  ctx.font = 'bold 50px "Cinzel", Georgia, serif';
+  ctx.fillText('Monthly Screening Capsule', 80, 230);
 
   // Persona Card
-  drawRoundedRect(ctx, 80, 320, 920, 260, 24, '#1e293b', '#38bdf8', 3);
-  ctx.fillStyle = '#94a3b8';
-  ctx.font = 'bold 26px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('YOUR CINEMATIC PERSONA', 120, 380);
+  drawRoundedRect(ctx, 80, 320, 920, 260, 20, '#260a10', '#e11d48', 2);
+  ctx.fillStyle = '#fda4af';
+  ctx.font = 'bold 24px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText('CURATED THEATRE PERSONA', 120, 380);
 
-  ctx.fillStyle = '#f59e0b';
-  ctx.font = 'bold 52px "Outfit", sans-serif';
+  ctx.fillStyle = '#fbbf24';
+  ctx.font = 'bold 48px "Cinzel", Georgia, serif';
   ctx.fillText(persona, 120, 470);
 
   // Watch Time Box
-  drawRoundedRect(ctx, 80, 620, 440, 300, 24, '#1e293b');
-  ctx.fillStyle = '#38bdf8';
-  ctx.font = 'bold 26px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('WATCH TIME', 120, 680);
+  drawRoundedRect(ctx, 80, 620, 440, 300, 20, '#260a10');
+  ctx.fillStyle = '#e11d48';
+  ctx.font = 'bold 24px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText('SCREEN TIME', 120, 680);
 
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 64px "Outfit", sans-serif';
+  ctx.font = 'bold 64px "Cinzel", Georgia, serif';
   ctx.fillText(`${totalHours.toFixed(1)} hrs`, 120, 770);
 
-  ctx.fillStyle = '#94a3b8';
-  ctx.font = '28px "Plus Jakarta Sans", sans-serif';
+  ctx.fillStyle = '#9f7580';
+  ctx.font = '26px "Plus Jakarta Sans", sans-serif';
   ctx.fillText(`${totalFilms} films logged`, 120, 850);
 
   // Top Auteur Box
-  drawRoundedRect(ctx, 560, 620, 440, 300, 24, '#1e293b');
-  ctx.fillStyle = '#a855f7';
-  ctx.font = 'bold 26px "Plus Jakarta Sans", sans-serif';
+  drawRoundedRect(ctx, 560, 620, 440, 300, 20, '#260a10');
+  ctx.fillStyle = '#fbbf24';
+  ctx.font = 'bold 24px "Plus Jakarta Sans", sans-serif';
   ctx.fillText('TOP AUTEUR', 600, 680);
 
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 50px "Outfit", sans-serif';
+  ctx.font = 'bold 46px "Cinzel", Georgia, serif';
   ctx.fillText(topDirector.slice(0, 16), 600, 770);
 
-  ctx.fillStyle = '#94a3b8';
-  ctx.font = '28px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('Most watched director', 600, 850);
+  ctx.fillStyle = '#9f7580';
+  ctx.font = '26px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText('Auditorium rotation', 600, 850);
 
   // Frequent Vibes & Genres
-  drawRoundedRect(ctx, 80, 960, 920, 280, 24, '#1e293b');
-  ctx.fillStyle = '#10b981';
-  ctx.font = 'bold 26px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('FREQUENT VIBES & GENRES', 120, 1020);
+  drawRoundedRect(ctx, 80, 960, 920, 280, 20, '#260a10');
+  ctx.fillStyle = '#f43f5e';
+  ctx.font = 'bold 24px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText('FEATURED GENRES & PROGRAMMES', 120, 1020);
 
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 44px "Outfit", sans-serif';
+  ctx.font = 'bold 42px "Cinzel", Georgia, serif';
   const genreStr = topGenres.slice(0, 3).join(' • ') || 'Cinema';
   ctx.fillText(genreStr.slice(0, 38), 120, 1110);
 
@@ -88,19 +89,19 @@ export async function generateStoryCardBlob({
     try {
       const img = await loadImage(posterUrl);
       ctx.save();
-      roundRectPath(ctx, 420, 1280, 240, 360, 18);
+      roundRectPath(ctx, 420, 1280, 240, 360, 16);
       ctx.clip();
       ctx.drawImage(img, 420, 1280, 240, 360);
       ctx.restore();
     } catch {
-      // ignore poster fail
+      // ignore
     }
   }
 
   // Footer branding
-  ctx.fillStyle = '#64748b';
-  ctx.font = 'bold 28px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('Created with Cinefy', 80, 1800);
+  ctx.fillStyle = '#9f7580';
+  ctx.font = 'bold 26px "Cinzel", Georgia, serif';
+  ctx.fillText('Curated via Cinefy Theatre Engine', 80, 1800);
 
   return new Promise(resolve => {
     canvas.toBlob(blob => resolve(blob), 'image/png');

@@ -1,8 +1,7 @@
 // src/components/UploadModal.jsx
 import React, { useState } from 'react';
-import { X, Upload, FileText, CheckCircle2, RotateCcw, AlertCircle } from 'lucide-react';
+import { X, Upload, CheckCircle2, RotateCcw, Film } from 'lucide-react';
 import { processLetterboxdFiles } from '../services/csvParser';
-import { SAMPLE_DIARY, SAMPLE_WATCHLIST } from '../data/sampleData';
 
 export default function UploadModal({ isOpen, onClose, onDataLoaded, onResetDemo }) {
   const [dragActive, setDragActive] = useState(false);
@@ -15,7 +14,7 @@ export default function UploadModal({ isOpen, onClose, onDataLoaded, onResetDemo
   const handleFiles = async (files) => {
     if (!files || files.length === 0) return;
     setIsProcessing(true);
-    setStatusMsg('Parsing Letterboxd CSVs and syncing TMDb metadata...');
+    setStatusMsg('Reading Letterboxd CSVs and syncing archive...');
 
     try {
       const { diary, watchlist } = await processLetterboxdFiles(files, (pct) => {
@@ -24,18 +23,18 @@ export default function UploadModal({ isOpen, onClose, onDataLoaded, onResetDemo
 
       if (diary.length > 0 || watchlist.length > 0) {
         onDataLoaded(diary, watchlist);
-        setStatusMsg(`Successfully synced ${diary.length} diary entries and ${watchlist.length} watchlist films!`);
+        setStatusMsg(`Imported ${diary.length} diary screenings & ${watchlist.length} watchlist titles!`);
         setTimeout(() => {
           setIsProcessing(false);
           onClose();
-        }, 1200);
+        }, 1000);
       } else {
         setStatusMsg('No valid diary or watchlist rows found in selected CSVs.');
         setIsProcessing(false);
       }
     } catch (err) {
       console.error(err);
-      setStatusMsg('Error processing files. Please ensure you uploaded Letterboxd export CSVs.');
+      setStatusMsg('Error processing files. Please upload Letterboxd export CSVs.');
       setIsProcessing(false);
     }
   };
@@ -51,28 +50,28 @@ export default function UploadModal({ isOpen, onClose, onDataLoaded, onResetDemo
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-          <h2 style={{ fontSize: '20px', fontWeight: '800' }}>📥 Sync Letterboxd Data</h2>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: '800' }}>📥 Import Letterboxd Archive</h2>
           <button
             onClick={onClose}
-            style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer' }}
+            style={{ background: 'transparent', border: 'none', color: '#fda4af', cursor: 'pointer' }}
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
-        <p style={{ color: '#94a3b8', fontSize: '13px', marginBottom: '20px', lineHeight: 1.5 }}>
-          Export your Letterboxd account data (Settings &rarr; Import & Export &rarr; Export Data) and drop your <b>diary.csv</b>, <b>ratings.csv</b>, and <b>watchlist.csv</b> here.
+        <p style={{ color: '#fda4af', fontSize: '13px', marginBottom: '18px', lineHeight: 1.5 }}>
+          Export your Letterboxd archive (Settings &rarr; Import & Export) and drop your <b>diary.csv</b>, <b>ratings.csv</b>, and <b>watchlist.csv</b>.
         </p>
 
-        {/* Dropzone Area */}
+        {/* Dropzone */}
         <div
           style={{
-            border: `2px dashed ${dragActive ? '#38bdf8' : 'rgba(255, 255, 255, 0.15)'}`,
-            borderRadius: '16px',
-            padding: '36px 20px',
+            border: `2px dashed ${dragActive ? '#e11d48' : 'rgba(225, 29, 72, 0.25)'}`,
+            borderRadius: '10px',
+            padding: '32px 18px',
             textAlign: 'center',
-            background: dragActive ? 'rgba(56, 189, 248, 0.05)' : 'rgba(255, 255, 255, 0.02)',
+            background: dragActive ? 'rgba(225, 29, 72, 0.08)' : 'rgba(225, 29, 72, 0.02)',
             transition: 'all 0.2s ease',
             cursor: 'pointer'
           }}
@@ -90,48 +89,47 @@ export default function UploadModal({ isOpen, onClose, onDataLoaded, onResetDemo
             onChange={(e) => handleFiles(Array.from(e.target.files))}
           />
           <div style={{
-            width: '54px',
-            height: '54px',
+            width: '48px',
+            height: '48px',
             borderRadius: '50%',
-            background: 'rgba(56, 189, 248, 0.15)',
-            color: '#38bdf8',
+            background: 'rgba(225, 29, 72, 0.15)',
+            color: '#e11d48',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
-            marginBottom: '14px'
+            marginBottom: '12px'
           }}>
-            <Upload size={24} />
+            <Film size={22} />
           </div>
-          <div style={{ fontSize: '15px', fontWeight: '700', color: '#f8fafc', marginBottom: '4px' }}>
-            Click or drag Letterboxd CSVs here
+          <div style={{ fontSize: '14px', fontWeight: '700', color: '#fff1f2', marginBottom: '3px' }}>
+            Drop Letterboxd CSVs here (Instant Import)
           </div>
-          <div style={{ fontSize: '12px', color: '#64748b' }}>
+          <div style={{ fontSize: '11px', color: '#9f7580' }}>
             Supports diary.csv, ratings.csv, reviews.csv, watchlist.csv
           </div>
         </div>
 
-        {/* Progress feedback */}
+        {/* Progress bar */}
         {isProcessing && (
-          <div style={{ marginTop: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#94a3b8', marginBottom: '6px' }}>
+          <div style={{ marginTop: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#fda4af', marginBottom: '4px' }}>
               <span>{statusMsg}</span>
               <span>{progress}%</span>
             </div>
-            <div style={{ width: '100%', height: '6px', background: 'rgba(255, 255, 255, 0.1)', borderRadius: '9999px', overflow: 'hidden' }}>
-              <div style={{ width: `${progress}%`, height: '100%', background: '#38bdf8', transition: 'width 0.2s ease' }} />
+            <div style={{ width: '100%', height: '5px', background: 'rgba(255, 255, 255, 0.08)', borderRadius: '9999px', overflow: 'hidden' }}>
+              <div style={{ width: `${progress}%`, height: '100%', background: '#e11d48', transition: 'width 0.2s ease' }} />
             </div>
           </div>
         )}
 
         {statusMsg && !isProcessing && (
-          <div style={{ marginTop: '16px', fontSize: '13px', color: '#10b981', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <CheckCircle2 size={16} />
+          <div style={{ marginTop: '14px', fontSize: '12px', color: '#10b981', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <CheckCircle2 size={15} />
             <span>{statusMsg}</span>
           </div>
         )}
 
-        {/* Footer with Demo Reset */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '28px', borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '18px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px', borderTop: '1px solid rgba(225, 29, 72, 0.15)', paddingTop: '16px' }}>
           <button
             type="button"
             className="btn-secondary"
@@ -142,7 +140,7 @@ export default function UploadModal({ isOpen, onClose, onDataLoaded, onResetDemo
             }}
           >
             <RotateCcw size={13} />
-            <span>Load Sample Demo Data</span>
+            <span>Load Sample Archive</span>
           </button>
 
           <button type="button" className="btn-secondary" onClick={onClose}>

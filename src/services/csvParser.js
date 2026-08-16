@@ -78,12 +78,8 @@ export async function processLetterboxdFiles(files, onProgress) {
     return { diary: [], watchlist: [] };
   }
 
-  // Parse Diary Data
-  const diary = [];
-  const total = baseRows.length;
-
-  for (let i = 0; i < total; i++) {
-    const row = baseRows[i];
+  // 1. Instant Synchronous Diary Parsing
+  const diary = baseRows.map((row, i) => {
     const name = row['Name'] || row['name'] || row['Title'] || 'Untitled';
     const year = parseInt(row['Year'] || row['year'], 10) || null;
     const dateStr = row['Watched Date'] || row['Date'] || '';
@@ -104,13 +100,7 @@ export async function processLetterboxdFiles(files, onProgress) {
     const rating = parseFloat(row['Rating'] || row['rating']) || null;
     const decade = year ? `${Math.floor(year / 10) * 10}s` : 'N/A';
 
-    if (onProgress) {
-      onProgress(Math.round(((i + 1) / total) * 100));
-    }
-
-    const meta = await fetchMovieMetadataByName(name, year);
-
-    diary.push({
+    return {
       id: i + 1,
       name,
       year,
@@ -119,34 +109,66 @@ export async function processLetterboxdFiles(files, onProgress) {
       dayOfWeek,
       rating,
       decade,
-      director: meta.director,
-      genre: meta.genre,
-      overview: meta.overview,
-      poster: meta.poster,
-      runtime: meta.runtime,
+      director: row['Director'] || 'Auteur',
+      genre: row['Genres'] || row['Genre'] || 'Cinema',
+      overview: row['Overview'] || row['Review'] || '',
+      poster: null,
+      runtime: 115,
       review: row['Review'] || ''
-    });
-  }
+    };
+  });
 
-  // Parse Watchlist
-  const watchlist = [];
+  // 2. Instant Synchronous Watchlist Parsing (Zero latency)
   const rawWatch = fileDataMap['watchlist'] || [];
-  for (let i = 0; i < rawWatch.length; i++) {
-    const row = rawWatch[i];
+  const watchlist = rawWatch.map((row, i) => {
     const name = row['Name'] || row['name'] || row['Title'] || 'Untitled';
     const year = parseInt(row['Year'] || row['year'], 10) || null;
-    const meta = await fetchMovieMetadataByName(name, year);
 
-    watchlist.push({
+    return {
       id: 1000 + i,
       name,
       year,
-      director: meta.director,
-      genre: meta.genre,
-      overview: meta.overview,
-      poster: meta.poster
-    });
+      director: row['Director'] || 'Auteur',
+      genre: row['Genres'] || row['Genre'] || 'Cinema',
+      overview: row['Overview'] || '',
+      poster: null
+    };
+  });
+
+  if (onProgress) onProgress(60);
+
+  // 3. Fast Parallel Enrichment for initial top 12 films so UI is instantly rich
+  const enrichCount = Math.min(diary.length, 12);
+  const enrichPromises = [];
+
+  for (let i = 0; i < enrichCount; i++) {
+    enrichPromises.push(
+      fetchMovieMetadataByName(diary[i].name, diary[i].year).then(meta => {
+        diary[i].director = meta.director || diary[i].director;
+        diary[i].genre = meta.genre || diary[i].genre;
+        diary[i].overview = meta.overview || diary[i].overview;
+        diary[i].poster = meta.poster;
+        diary[i].runtime = meta.runtime || 115;
+      }).catch(() => {})
+    );
   }
+
+  // Enrich first 8 watchlist items in parallel
+  const watchEnrichCount = Math.min(watchlist.length, 8);
+  for (let i = 0; i < watchEnrichCount; i++) {
+    enrichPromises.push(
+      fetchMovieMetadataByName(watchlist[i].name, watchlist[i].year).then(meta => {
+        watchlist[i].director = meta.director || watchlist[i].director;
+        watchlist[i].genre = meta.genre || watchlist[i].genre;
+        watchlist[i].overview = meta.overview || watchlist[i].overview;
+        watchlist[i].poster = meta.poster;
+      }).catch(() => {})
+    );
+  }
+
+  await Promise.all(enrichPromises);
+
+  if (onProgress) onProgress(100);
 
   return { diary, watchlist };
 }
