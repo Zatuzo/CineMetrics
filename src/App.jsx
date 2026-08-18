@@ -1,5 +1,5 @@
 // src/App.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
 import QuickLogModal from './components/QuickLogModal';
@@ -19,32 +19,37 @@ export default function App() {
   const [watchlist, setWatchlist] = useState(SAMPLE_WATCHLIST);
   const [currentTab, setCurrentTab] = useState('home');
   const [activeMix, setActiveMix] = useState(null);
-  const [isLoadingDb, setIsLoadingDb] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [isDbLoaded, setIsDbLoaded] = useState(false);
 
   // Modals
   const [isQuickLogOpen, setIsQuickLogOpen] = useState(false);
   const [quickLogFilm, setQuickLogFilm] = useState(null);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
 
-  // Auto-fetch from Supabase on launch
-  useEffect(() => {
-    async function loadInitialData() {
-      try {
-        const res = await fetchSupabaseData("zatuzo");
-        if (res && res.diary && res.diary.length > 0) {
-          setDiary(res.diary);
-        }
-        if (res && res.watchlist && res.watchlist.length > 0) {
-          setWatchlist(res.watchlist);
-        }
-      } catch (e) {
-        console.warn("Could not connect to Supabase, fallback to sample:", e);
-      } finally {
-        setIsLoadingDb(false);
+  // Function to load data from Supabase
+  const loadFromSupabase = useCallback(async () => {
+    setIsSyncing(true);
+    try {
+      const res = await fetchSupabaseData("zatuzo");
+      if (res && res.diary && res.diary.length > 0) {
+        setDiary(res.diary);
+        setIsDbLoaded(true);
       }
+      if (res && res.watchlist && res.watchlist.length > 0) {
+        setWatchlist(res.watchlist);
+      }
+    } catch (e) {
+      console.warn("Could not connect to Supabase, fallback to sample:", e);
+    } finally {
+      setIsSyncing(false);
     }
-    loadInitialData();
   }, []);
+
+  // Auto-fetch from Supabase on mount
+  useEffect(() => {
+    loadFromSupabase();
+  }, [loadFromSupabase]);
 
   const handleSaveFilm = (newFilm) => {
     setDiary(prev => [newFilm, ...prev]);
@@ -60,8 +65,7 @@ export default function App() {
   };
 
   const handleResetDemo = () => {
-    setDiary(SAMPLE_DIARY);
-    setWatchlist(SAMPLE_WATCHLIST);
+    loadFromSupabase();
   };
 
   const handleOpenQuickLog = (film = null) => {
