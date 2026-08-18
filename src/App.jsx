@@ -6,6 +6,7 @@ import QuickLogModal from './components/QuickLogModal';
 import UploadModal from './components/UploadModal';
 
 import HomeView from './views/HomeView';
+import DiaryView from './views/DiaryView';
 import RewindView from './views/RewindView';
 import MixesView from './views/MixesView';
 import SemanticView from './views/SemanticView';
@@ -98,7 +99,6 @@ export default function App() {
       <CinefyHeroBanner
         diary={diary}
         watchlist={watchlist}
-        onNavigate={setCurrentTab}
       />
 
       {/* 3. Main Centered Cinema Content */}
@@ -111,6 +111,13 @@ export default function App() {
               onSelectMovie={handleOpenQuickLog}
               onSelectMix={handleSelectMix}
               onNavigate={setCurrentTab}
+            />
+          )}
+
+          {currentTab === 'diary' && (
+            <DiaryView
+              diary={diary}
+              onSelectMovie={handleOpenQuickLog}
             />
           )}
 

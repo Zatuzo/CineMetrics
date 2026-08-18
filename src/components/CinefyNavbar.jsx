@@ -1,6 +1,6 @@
 // src/components/CinefyNavbar.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Plus, Upload, Star, Sparkles, ChevronDown, User, Disc3, Compass, BarChart2, Clapperboard, Film } from 'lucide-react';
+import { Search, Plus, Upload, Star, Sparkles, ChevronDown, User, Disc3, Compass, BarChart2, Calendar, Film } from 'lucide-react';
 import { searchTMDbMovies } from '../services/tmdb';
 
 export default function CinefyNavbar({ 
@@ -53,7 +53,8 @@ export default function CinefyNavbar({
   }, []);
 
   const navLinks = [
-    { id: 'home', label: 'DIARY', icon: Film },
+    { id: 'home', label: 'HOME', icon: Film },
+    { id: 'diary', label: 'DIARY', icon: Calendar },
     { id: 'rewind', label: 'REWIND', icon: Sparkles },
     { id: 'mixes', label: 'MIXES', icon: Disc3 },
     { id: 'semantic', label: 'VIBE SEARCH', icon: Compass },
@@ -119,6 +120,10 @@ export default function CinefyNavbar({
                   <span className="cf-stat-badge">{watchlistCount}</span>
                 </div>
                 <div className="cf-menu-divider" />
+                <button className="cf-menu-btn" onClick={() => { setTab('diary'); setIsProfileOpen(false); }}>
+                  <Calendar size={13} style={{ color: 'var(--accent-ruby)' }} />
+                  <span>Chronological Diary</span>
+                </button>
                 <button className="cf-menu-btn" onClick={() => { setTab('rewind'); setIsProfileOpen(false); }}>
                   <Sparkles size={13} style={{ color: 'var(--accent-ruby)' }} />
                   <span>Monthly Rewinds</span>
