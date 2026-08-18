@@ -1,5 +1,5 @@
 // src/App.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
 import QuickLogModal from './components/QuickLogModal';
@@ -12,17 +12,39 @@ import SemanticView from './views/SemanticView';
 import AnalyticsView from './views/AnalyticsView';
 
 import { SAMPLE_DIARY, SAMPLE_WATCHLIST } from './data/sampleData';
+import { fetchSupabaseData } from './supabase';
 
 export default function App() {
   const [diary, setDiary] = useState(SAMPLE_DIARY);
   const [watchlist, setWatchlist] = useState(SAMPLE_WATCHLIST);
   const [currentTab, setCurrentTab] = useState('home');
   const [activeMix, setActiveMix] = useState(null);
+  const [isLoadingDb, setIsLoadingDb] = useState(true);
 
   // Modals
   const [isQuickLogOpen, setIsQuickLogOpen] = useState(false);
   const [quickLogFilm, setQuickLogFilm] = useState(null);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
+
+  // Auto-fetch from Supabase on launch
+  useEffect(() => {
+    async function loadInitialData() {
+      try {
+        const res = await fetchSupabaseData("zatuzo");
+        if (res && res.diary && res.diary.length > 0) {
+          setDiary(res.diary);
+        }
+        if (res && res.watchlist && res.watchlist.length > 0) {
+          setWatchlist(res.watchlist);
+        }
+      } catch (e) {
+        console.warn("Could not connect to Supabase, fallback to sample:", e);
+      } finally {
+        setIsLoadingDb(false);
+      }
+    }
+    loadInitialData();
+  }, []);
 
   const handleSaveFilm = (newFilm) => {
     setDiary(prev => [newFilm, ...prev]);
