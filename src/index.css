@@ -643,12 +643,24 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-/* Quick Access 6-Grid (Bigger & Taller) */
+/* Quick Access 6-Grid: Strictly 6 columns on desktop (or 3x2 on tablet) - NO ORPHANS */
 .quick-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(6, 1fr);
   gap: 12px;
   margin-bottom: 38px;
+}
+
+@media (max-width: 1360px) {
+  .quick-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .quick-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .quick-tile {
@@ -718,21 +730,29 @@ h1, h2, h3, h4, h5, h6 {
   margin-top: 3px;
 }
 
-/* Media Cards (Larger Posters, Higher Impact) */
+/* Media Rail: Sleek Horizontal Scroll Strip without lonely wrapping orphans */
 .media-rail {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  gap: 20px;
+  display: flex;
+  gap: 18px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
 }
 
-@media (max-width: 600px) {
-  .media-rail {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
+.media-rail::-webkit-scrollbar {
+  height: 6px;
+}
+
+.media-rail::-webkit-scrollbar-thumb {
+  background: #242f3e;
+  border-radius: 4px;
 }
 
 .media-card {
+  flex: 0 0 205px;
+  width: 205px;
+  scroll-snap-align: start;
   background: #141a24;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
@@ -793,11 +813,23 @@ h1, h2, h3, h4, h5, h6 {
   gap: 3px;
 }
 
-/* Daily Mix Rail Cards */
+/* Daily Mix Rail Cards: Exactly 4 columns on desktop - NO ORPHANS */
 .mix-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 20px;
+}
+
+@media (max-width: 1280px) {
+  .mix-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 650px) {
+  .mix-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .mix-card {

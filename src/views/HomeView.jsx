@@ -33,12 +33,12 @@ export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix,
         const dateB = new Date(b.date || b.Watched_Date || b.Date || 0);
         return dateB - dateA;
       })
-      .slice(0, 8);
+      .slice(0, 16);
   }, [diary]);
 
   // 5-Star Masterpieces - Strictly 5.0 stars only
   const topRatedFilms = useMemo(() => {
-    return diary.filter(f => Number(f.rating || f.Rating) === 5).slice(0, 8);
+    return diary.filter(f => Number(f.rating || f.Rating) === 5).slice(0, 16);
   }, [diary]);
 
   const fiveStarCount = useMemo(() => {
@@ -47,7 +47,7 @@ export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix,
 
   // Watchlist Queue (top unwatched)
   const watchlistQueue = useMemo(() => {
-    return (watchlist || []).slice(0, 8);
+    return (watchlist || []).slice(0, 16);
   }, [watchlist]);
 
   const topMix1 = mixes[0];
@@ -55,7 +55,7 @@ export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix,
 
   return (
     <div>
-      {/* 1. Quick Access 6-Grid */}
+      {/* 1. Quick Access 6-Grid (Exact 6-column grid on desktop, 3x2 on tablet - NO EMPTY GAPS) */}
       <div className="quick-grid">
         <div className="quick-tile" onClick={() => onNavigate('rewind')}>
           <div className="quick-tile-icon" style={{ background: 'var(--accent-ruby-subtle)', color: 'var(--accent-ruby)' }}>
@@ -104,7 +104,7 @@ export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix,
         </div>
       </div>
 
-      {/* 2. Recently Logged Rail */}
+      {/* 2. Recently Logged Rail (Single-row scrollable rail - NO ORPHANS) */}
       <div className="section-container">
         <div className="section-header">
           <div>
@@ -131,7 +131,7 @@ export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix,
         </div>
       </div>
 
-      {/* 3. Cinema Mixes Rail */}
+      {/* 3. Cinema Mixes Rail (Exact 4-column balanced grid - NO ORPHANS) */}
       <div className="section-container">
         <div className="section-header">
           <div>
@@ -176,7 +176,7 @@ export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix,
         </div>
       </div>
 
-      {/* 4. Watchlist Queue */}
+      {/* 4. Watchlist Queue (Single-row scrollable rail - NO ORPHANS) */}
       {watchlistQueue.length > 0 && (
         <div className="section-container">
           <div className="section-header">
@@ -205,7 +205,7 @@ export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix,
         </div>
       )}
 
-      {/* 5. 5-Star Masterpieces */}
+      {/* 5. 5-Star Masterpieces (Single-row scrollable rail - NO ORPHANS) */}
       {topRatedFilms.length > 0 && (
         <div className="section-container">
           <div className="section-header">
