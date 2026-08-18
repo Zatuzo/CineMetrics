@@ -1,9 +1,9 @@
-// src/components/LetterboxdNav.jsx
+// src/components/CinefyNavbar.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Plus, Upload, Star, Sparkles, ChevronDown, Film, User, Compass, Disc3, BarChart2 } from 'lucide-react';
+import { Search, Plus, Upload, Star, Sparkles, ChevronDown, User, Disc3, Compass, BarChart2, Clapperboard, Film } from 'lucide-react';
 import { searchTMDbMovies } from '../services/tmdb';
 
-export default function LetterboxdNav({ 
+export default function CinefyNavbar({ 
   currentTab, 
   setTab, 
   onOpenQuickLog, 
@@ -53,67 +53,82 @@ export default function LetterboxdNav({
   }, []);
 
   const navLinks = [
-    { id: 'home', label: 'FILMS' },
+    { id: 'home', label: 'DIARY', icon: Film },
     { id: 'rewind', label: 'REWIND', icon: Sparkles },
-    { id: 'mixes', label: 'MIXES' },
-    { id: 'semantic', label: 'VIBE SEARCH' },
-    { id: 'analytics', label: 'ANALYTICS' }
+    { id: 'mixes', label: 'MIXES', icon: Disc3 },
+    { id: 'semantic', label: 'VIBE SEARCH', icon: Compass },
+    { id: 'analytics', label: 'ANALYTICS', icon: BarChart2 }
   ];
 
   return (
-    <header className="lb-header">
-      <div className="lb-nav-container">
-        {/* 1. Left: Iconic Cinefy Brand Logo */}
-        <div className="lb-brand-group" onClick={() => setTab('home')}>
-          <div className="lb-dots">
-            <span className="lb-dot dot-orange" />
-            <span className="lb-dot dot-green" />
-            <span className="lb-dot dot-blue" />
+    <header className="cf-header">
+      <div className="cf-nav-container">
+        {/* 1. Left: Custom Cinefy Anamorphic Brand Logo */}
+        <div className="cf-brand-group" onClick={() => setTab('home')}>
+          <div className="cf-logo-mark">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="url(#cf-grad-1)" />
+              <path d="M2 17L12 22L22 17" stroke="url(#cf-grad-2)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M2 12L12 17L22 12" stroke="url(#cf-grad-1)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+              <defs>
+                <linearGradient id="cf-grad-1" x1="2" y1="2" x2="22" y2="17" gradientUnits="userSpaceOnUse">
+                  <stop stopColor="#ff3366" />
+                  <stop offset="1" stopColor="#ff6b3d" />
+                </linearGradient>
+                <linearGradient id="cf-grad-2" x1="2" y1="12" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                  <stop stopColor="#ff6b3d" />
+                  <stop offset="1" stopColor="#f59e0b" />
+                </linearGradient>
+              </defs>
+            </svg>
           </div>
-          <span className="lb-logo-text">Cinefy</span>
+          <div className="cf-brand-text-wrap">
+            <span className="cf-logo-text">CINEFY</span>
+            <span className="cf-badge-pro">PRO</span>
+          </div>
         </div>
 
         {/* 2. Middle: Navigation Links */}
-        <nav className="lb-nav-links">
-          {/* User Profile Dropdown */}
-          <div className="lb-profile-item" ref={profileDropdownRef}>
+        <nav className="cf-nav-links">
+          {/* User Profile Pill */}
+          <div className="cf-profile-item" ref={profileDropdownRef}>
             <button 
-              className={`lb-profile-btn ${isProfileOpen ? 'active' : ''}`}
+              className={`cf-profile-btn ${isProfileOpen ? 'active' : ''}`}
               onClick={() => setIsProfileOpen(!isProfileOpen)}
             >
-              <div className="lb-avatar">
-                <User size={13} />
+              <div className="cf-avatar">
+                <span>Z</span>
               </div>
-              <span className="lb-username">ZATUZO</span>
-              <ChevronDown size={11} className="lb-chevron" />
+              <span className="cf-username">Zatuzo</span>
+              <ChevronDown size={11} className="cf-chevron" />
             </button>
 
             {isProfileOpen && (
-              <div className="lb-profile-menu">
-                <div className="lb-profile-header">
-                  <div style={{ fontWeight: '700', fontSize: '13px', color: '#fff' }}>Zatuzo</div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Letterboxd Cinephile</div>
+              <div className="cf-profile-menu">
+                <div className="cf-profile-header">
+                  <div style={{ fontWeight: '800', fontSize: '13px', color: '#fff' }}>Zatuzo</div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>CineMetrics Curator</div>
                 </div>
-                <div className="lb-menu-divider" />
-                <div className="lb-profile-stat">
-                  <span>Watched Diary</span>
-                  <span className="lb-stat-badge">{totalFilms}</span>
+                <div className="cf-menu-divider" />
+                <div className="cf-profile-stat">
+                  <span>Logged Films</span>
+                  <span className="cf-stat-badge">{totalFilms}</span>
                 </div>
-                <div className="lb-profile-stat">
+                <div className="cf-profile-stat">
                   <span>Watchlist Queue</span>
-                  <span className="lb-stat-badge">{watchlistCount}</span>
+                  <span className="cf-stat-badge">{watchlistCount}</span>
                 </div>
-                <div className="lb-menu-divider" />
-                <button className="lb-menu-btn" onClick={() => { setTab('rewind'); setIsProfileOpen(false); }}>
-                  <Sparkles size={13} />
+                <div className="cf-menu-divider" />
+                <button className="cf-menu-btn" onClick={() => { setTab('rewind'); setIsProfileOpen(false); }}>
+                  <Sparkles size={13} style={{ color: 'var(--accent-ruby)' }} />
                   <span>Monthly Rewinds</span>
                 </button>
-                <button className="lb-menu-btn" onClick={() => { setTab('analytics'); setIsProfileOpen(false); }}>
-                  <BarChart2 size={13} />
+                <button className="cf-menu-btn" onClick={() => { setTab('analytics'); setIsProfileOpen(false); }}>
+                  <BarChart2 size={13} style={{ color: '#f59e0b' }} />
                   <span>Viewing Analytics</span>
                 </button>
-                <button className="lb-menu-btn" onClick={() => { onOpenUpload(); setIsProfileOpen(false); }}>
-                  <Upload size={13} />
+                <button className="cf-menu-btn" onClick={() => { onOpenUpload(); setIsProfileOpen(false); }}>
+                  <Upload size={13} style={{ color: '#38bdf8' }} />
                   <span>Sync Supabase Data</span>
                 </button>
               </div>
@@ -127,42 +142,43 @@ export default function LetterboxdNav({
             return (
               <button
                 key={link.id}
-                className={`lb-nav-btn ${isActive ? 'active' : ''}`}
+                className={`cf-nav-btn ${isActive ? 'active' : ''}`}
                 onClick={() => setTab(link.id)}
               >
-                {Icon && <Icon size={12} style={{ marginRight: '4px' }} />}
+                <Icon size={13} className="cf-nav-icon" />
                 <span>{link.label}</span>
               </button>
             );
           })}
         </nav>
 
-        {/* 3. Right: Search & Actions */}
-        <div className="lb-right-actions">
+        {/* 3. Right: Live Search & Actions */}
+        <div className="cf-right-actions">
           {/* Live Search Bar with TMDb Autocomplete */}
-          <div className="lb-search-wrapper" ref={searchDropdownRef}>
-            <Search size={14} className="lb-search-icon" />
+          <div className="cf-search-wrapper" ref={searchDropdownRef}>
+            <Search size={13} className="cf-search-icon" />
             <input
               type="text"
               placeholder="Search films..."
-              className="lb-search-input"
+              className="cf-search-input"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => searchQuery && setIsSearchOpen(true)}
             />
+            <div className="cf-kbd-hint">⌘K</div>
 
             {/* Dropdown Results */}
             {isSearchOpen && (
-              <div className="lb-search-dropdown">
+              <div className="cf-search-dropdown">
                 {isSearching ? (
-                  <div className="lb-search-empty">Searching TMDb...</div>
+                  <div className="cf-search-empty">Searching TMDb catalog...</div>
                 ) : searchResults.length === 0 ? (
-                  <div className="lb-search-empty">No films found for "{searchQuery}"</div>
+                  <div className="cf-search-empty">No films found for "{searchQuery}"</div>
                 ) : (
                   searchResults.map(movie => (
                     <div
                       key={movie.id}
-                      className="lb-search-result-item"
+                      className="cf-search-result-item"
                       onClick={() => {
                         onSelectMovie({
                           name: movie.title,
@@ -179,11 +195,11 @@ export default function LetterboxdNav({
                       <img
                         src={movie.posterUrl || 'https://via.placeholder.com/92x138/181818/666666?text=No+Poster'}
                         alt={movie.title}
-                        className="lb-result-thumb"
+                        className="cf-result-thumb"
                       />
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div className="lb-result-title">{movie.title}</div>
-                        <div className="lb-result-meta">
+                        <div className="cf-result-title">{movie.title}</div>
+                        <div className="cf-result-meta">
                           <span>{movie.year || 'N/A'}</span>
                           {movie.rating > 0 && (
                             <>
@@ -203,15 +219,15 @@ export default function LetterboxdNav({
           </div>
 
           {/* Sync Button */}
-          <button className="lb-sync-btn" onClick={onOpenUpload} title="Sync Supabase or Import Letterboxd CSVs">
+          <button className="cf-sync-btn" onClick={onOpenUpload} title="Sync Supabase or Import Letterboxd CSVs">
             <Upload size={12} />
             <span>Sync</span>
           </button>
 
-          {/* + LOG Button (Letterboxd signature green/accent button) */}
-          <button className="lb-log-btn" onClick={() => onOpenQuickLog(null)}>
+          {/* + LOG FILM Signature Crimson Button */}
+          <button className="cf-log-btn" onClick={() => onOpenQuickLog(null)}>
             <Plus size={13} strokeWidth={3} />
-            <span>LOG</span>
+            <span>LOG FILM</span>
           </button>
         </div>
       </div>

@@ -1,7 +1,7 @@
 // src/App.jsx
 import React, { useState, useEffect, useCallback } from 'react';
-import LetterboxdNav from './components/LetterboxdNav';
-import LetterboxdBanner from './components/LetterboxdBanner';
+import CinefyNavbar from './components/CinefyNavbar';
+import CinefyHeroBanner from './components/CinefyHeroBanner';
 import QuickLogModal from './components/QuickLogModal';
 import UploadModal from './components/UploadModal';
 
@@ -82,9 +82,9 @@ export default function App() {
   };
 
   return (
-    <div className="lb-app-shell">
-      {/* 1. Letterboxd-Style Top Navbar */}
-      <LetterboxdNav
+    <div className="cf-app-shell">
+      {/* 1. Bespoke Cinefy Top Navigation Bar */}
+      <CinefyNavbar
         currentTab={currentTab}
         setTab={setCurrentTab}
         onOpenQuickLog={() => handleOpenQuickLog(null)}
@@ -94,16 +94,16 @@ export default function App() {
         watchlistCount={watchlist.length}
       />
 
-      {/* 2. Letterboxd Welcome & Stats Ribbon */}
-      <LetterboxdBanner
+      {/* 2. Cinefy Taste Intelligence Ribbon Banner */}
+      <CinefyHeroBanner
         diary={diary}
         watchlist={watchlist}
         onNavigate={setCurrentTab}
       />
 
-      {/* 3. Centered Content Container */}
-      <main className="lb-main-wrapper">
-        <div className="lb-container">
+      {/* 3. Main Centered Cinema Content */}
+      <main className="cf-main-wrapper">
+        <div className="cf-container">
           {currentTab === 'home' && (
             <HomeView
               diary={diary}
