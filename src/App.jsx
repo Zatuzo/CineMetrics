@@ -1,7 +1,7 @@
 // src/App.jsx
 import React, { useState, useEffect, useCallback } from 'react';
-import Sidebar from './components/Sidebar';
-import Topbar from './components/Topbar';
+import LetterboxdNav from './components/LetterboxdNav';
+import LetterboxdBanner from './components/LetterboxdBanner';
 import QuickLogModal from './components/QuickLogModal';
 import UploadModal from './components/UploadModal';
 
@@ -15,7 +15,7 @@ import userLibrary from './data/userLibrary.json';
 import { fetchSupabaseData } from './supabase';
 
 export default function App() {
-  // Initialize immediately with your full 350+ Supabase library
+  // Initialize immediately with your full Supabase library
   const [diary, setDiary] = useState(userLibrary.diary || []);
   const [watchlist, setWatchlist] = useState(userLibrary.watchlist || []);
   const [currentTab, setCurrentTab] = useState('home');
@@ -82,70 +82,68 @@ export default function App() {
   };
 
   return (
-    <div className="app-container">
-      <div className="app-body">
-        {/* Left Navigation */}
-        <Sidebar
-          currentTab={currentTab}
-          setTab={setCurrentTab}
-          onOpenUpload={() => setIsUploadOpen(true)}
-          totalFilms={diary.length}
-          isSyncing={isSyncing}
-          dbSource={dbSource}
-        />
+    <div className="lb-app-shell">
+      {/* 1. Letterboxd-Style Top Navbar */}
+      <LetterboxdNav
+        currentTab={currentTab}
+        setTab={setCurrentTab}
+        onOpenQuickLog={() => handleOpenQuickLog(null)}
+        onOpenUpload={() => setIsUploadOpen(true)}
+        onSelectMovie={(m) => handleOpenQuickLog(m)}
+        totalFilms={diary.length}
+        watchlistCount={watchlist.length}
+      />
 
-        {/* Main Content Stage */}
-        <div className="main-wrapper">
-          <Topbar
-            onOpenQuickLog={() => handleOpenQuickLog(null)}
-            onOpenUpload={() => setIsUploadOpen(true)}
-            onSelectMovie={(m) => handleOpenQuickLog(m)}
-            onSyncSupabase={loadFromSupabase}
-            isSyncing={isSyncing}
-          />
+      {/* 2. Letterboxd Welcome & Stats Ribbon */}
+      <LetterboxdBanner
+        diary={diary}
+        watchlist={watchlist}
+        onNavigate={setCurrentTab}
+      />
 
-          <main className="main-stage">
-            {currentTab === 'home' && (
-              <HomeView
-                diary={diary}
-                watchlist={watchlist}
-                onSelectMovie={handleOpenQuickLog}
-                onSelectMix={handleSelectMix}
-                onNavigate={setCurrentTab}
-              />
-            )}
+      {/* 3. Centered Content Container */}
+      <main className="lb-main-wrapper">
+        <div className="lb-container">
+          {currentTab === 'home' && (
+            <HomeView
+              diary={diary}
+              watchlist={watchlist}
+              onSelectMovie={handleOpenQuickLog}
+              onSelectMix={handleSelectMix}
+              onNavigate={setCurrentTab}
+            />
+          )}
 
-            {currentTab === 'rewind' && (
-              <RewindView
-                diary={diary}
-                onSelectMovie={handleOpenQuickLog}
-              />
-            )}
+          {currentTab === 'rewind' && (
+            <RewindView
+              diary={diary}
+              onSelectMovie={handleOpenQuickLog}
+            />
+          )}
 
-            {currentTab === 'mixes' && (
-              <MixesView
-                diary={diary}
-                watchlist={watchlist}
-                onSelectMovie={handleOpenQuickLog}
-                activeMix={activeMix}
-              />
-            )}
+          {currentTab === 'mixes' && (
+            <MixesView
+              diary={diary}
+              watchlist={watchlist}
+              onSelectMovie={handleOpenQuickLog}
+              activeMix={activeMix}
+            />
+          )}
 
-            {currentTab === 'semantic' && (
-              <SemanticView
-                watchlist={watchlist}
-                onSelectMovie={handleOpenQuickLog}
-              />
-            )}
+          {currentTab === 'semantic' && (
+            <SemanticView
+              watchlist={watchlist}
+              onSelectMovie={handleOpenQuickLog}
+            />
+          )}
 
-            {currentTab === 'analytics' && (
-              <AnalyticsView
-                diary={diary}
-              />
-            )}
-          </main>
+          {currentTab === 'analytics' && (
+            <AnalyticsView
+              diary={diary}
+            />
+          )}
         </div>
-      </div>
+      </main>
 
       {/* Modals */}
       <QuickLogModal
