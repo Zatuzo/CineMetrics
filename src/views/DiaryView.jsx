@@ -1,46 +1,32 @@
 // src/views/DiaryView.jsx
 import React, { useState, useMemo } from 'react';
 import MovieCard from '../components/MovieCard';
-import { Calendar, Filter, Film, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, Film, Sparkles, Filter, SlidersHorizontal } from 'lucide-react';
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const MONTH_FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-function parseDateInfo(dateStr) {
-  if (!dateStr || dateStr.length < 10) {
-    return { month: 'LOG', day: '--', fullDate: 'Undated screening', dayOfWeek: '' };
-  }
+function formatCardDate(dateStr) {
+  if (!dateStr || typeof dateStr !== 'string' || dateStr.length < 10) return null;
   try {
     const parts = dateStr.slice(0, 10).split('-');
-    const year = parseInt(parts[0], 10);
     const monthIdx = parseInt(parts[1], 10) - 1;
     const day = parseInt(parts[2], 10);
-    const dt = new Date(Date.UTC(year, monthIdx, day, 12, 0, 0));
-
-    const monthAbbr = MONTH_NAMES[monthIdx] || 'LOG';
-    const dayOfWeek = DAYS[dt.getUTCDay()] || '';
-    const fullDate = dt.toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-      timeZone: 'UTC'
-    });
-
-    return { month: monthAbbr, day: String(day), fullDate, dayOfWeek, year };
+    return `${MONTH_NAMES[monthIdx] || 'LOG'} ${day}`;
   } catch {
-    return { month: 'LOG', day: '--', fullDate: dateStr, dayOfWeek: '' };
+    return null;
   }
 }
 
-function formatMonthLabel(monthStr) {
+function formatMonthHeader(monthStr) {
   if (!monthStr || monthStr.length < 7) return monthStr;
   const [year, month] = monthStr.split('-');
-  const date = new Date(parseInt(year, 10), parseInt(month, 10) - 1, 1);
-  return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const monthIdx = parseInt(month, 10) - 1;
+  return `${MONTH_FULL[monthIdx] || month} ${year}`;
 }
 
 export default function DiaryView({ diary = [], onSelectMovie }) {
-  // 1. Extract all available months (YYYY-MM)
+  // 1. Extract all available unique months (YYYY-MM) sorted descending
   const availableMonths = useMemo(() => {
     const set = new Set();
     diary.forEach(f => {
@@ -53,15 +39,13 @@ export default function DiaryView({ diary = [], onSelectMovie }) {
   }, [diary]);
 
   const [selectedMonth, setSelectedMonth] = useState('ALL');
+  const [sortBy, setSortBy] = useState('date-desc'); // date-desc, rating-desc, title-asc
 
-  // 2. Filter diary by selected month
-  const filteredFilms = useMemo(() => {
-    let list = [...diary].sort((a, b) => {
-      const dateA = new Date(a.date || a.Watched_Date || a.Date || 0);
-      const dateB = new Date(b.date || b.Watched_Date || b.Date || 0);
-      return dateB - dateA;
-    });
+  // 2. Filter and sort all diary films
+  const filteredAndSortedFilms = useMemo(() => {
+    let list = [...diary];
 
+    // Filter by month
     if (selectedMonth !== 'ALL') {
       list = list.filter(f => {
         const d = f.date || f.Watched_Date || f.Date;
@@ -69,58 +53,80 @@ export default function DiaryView({ diary = [], onSelectMovie }) {
       });
     }
 
+    // Sort
+    list.sort((a, b) => {
+      if (sortBy === 'date-desc') {
+        const dateA = new Date(a.date || a.Watched_Date || a.Date || 0);
+        const dateB = new Date(b.date || b.Watched_Date || b.Date || 0);
+        return dateB - dateA;
+      }
+      if (sortBy === 'rating-desc') {
+        return (b.rating || b.Rating || 0) - (a.rating || a.Rating || 0);
+      }
+      if (sortBy === 'title-asc') {
+        return (a.name || a.title || '').localeCompare(b.name || b.title || '');
+      }
+      return 0;
+    });
+
     return list;
-  }, [diary, selectedMonth]);
+  }, [diary, selectedMonth, sortBy]);
 
-  // 3. Group by unique date (Skipping dates with no entries)
-  const dateGroups = useMemo(() => {
+  // 3. Group by Month Sections for continuous full-bleed grids
+  const monthSections = useMemo(() => {
+    if (selectedMonth !== 'ALL') {
+      return [{
+        monthKey: selectedMonth,
+        monthTitle: formatMonthHeader(selectedMonth),
+        films: filteredAndSortedFilms
+      }];
+    }
+
     const groups = {};
-    filteredFilms.forEach(film => {
-      const dateStr = film.date || film.Watched_Date || film.Date;
-      const key = dateStr && typeof dateStr === 'string' && dateStr.length >= 10 
-        ? dateStr.slice(0, 10) 
-        : 'Undated';
-
+    filteredAndSortedFilms.forEach(film => {
+      const d = film.date || film.Watched_Date || film.Date;
+      const key = d && typeof d === 'string' && d.length >= 7 ? d.slice(0, 7) : 'Undated';
       if (!groups[key]) groups[key] = [];
       groups[key].push(film);
     });
 
     return Object.keys(groups)
-      .sort((a, b) => new Date(b) - new Date(a))
+      .sort()
+      .reverse()
       .map(key => ({
-        dateKey: key,
-        dateInfo: parseDateInfo(key),
+        monthKey: key,
+        monthTitle: key === 'Undated' ? 'Undated Screenings' : formatMonthHeader(key),
         films: groups[key]
       }));
-  }, [filteredFilms]);
+  }, [filteredAndSortedFilms, selectedMonth]);
 
-  const totalEntries = filteredFilms.length;
-  const uniqueDatesCount = dateGroups.length;
+  const totalScreenings = filteredAndSortedFilms.length;
 
   return (
     <div className="diary-view-container">
-      {/* Header with Month Selector Filter */}
+      {/* Header Bar with Month Filter & Sort Selector */}
       <div className="diary-header-bar">
         <div>
-          <h1 style={{ fontSize: '26px', fontWeight: '800', color: '#ffffff' }}>Film Diary</h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginTop: '4px' }}>
-            Visual chronological log of your screenings grouped by date watched.
+          <h1 style={{ fontSize: '24px', fontWeight: '800', color: '#ffffff' }}>Film Diary</h1>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginTop: '3px' }}>
+            Continuous visual chronological diary with exact dates on every film.
           </p>
         </div>
 
-        {/* Filter Controls */}
+        {/* Filter & Sort Controls */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          {/* Month Selector */}
           <div style={{
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '10px',
+            gap: '8px',
             background: '#141a24',
             border: '1px solid var(--border-subtle)',
             borderRadius: 'var(--radius-sm)',
-            padding: '0 14px',
-            height: '42px'
+            padding: '0 12px',
+            height: '38px'
           }}>
-            <Calendar size={16} style={{ color: 'var(--accent-ruby)', flexShrink: 0 }} />
+            <Calendar size={14} style={{ color: 'var(--accent-ruby)', flexShrink: 0 }} />
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
@@ -146,74 +152,107 @@ export default function DiaryView({ diary = [], onSelectMovie }) {
                 }).length;
                 return (
                   <option key={m} value={m} style={{ background: '#141a24', color: '#ffffff' }}>
-                    {formatMonthLabel(m)} ({count} {count === 1 ? 'film' : 'films'})
+                    {formatMonthHeader(m)} ({count} {count === 1 ? 'film' : 'films'})
                   </option>
                 );
               })}
             </select>
           </div>
 
+          {/* Sort Selector */}
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: '#141a24',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: 'var(--radius-sm)',
+            padding: '0 12px',
+            height: '38px'
+          }}>
+            <SlidersHorizontal size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                outline: 'none',
+                color: 'var(--text-primary)',
+                fontSize: '13px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                padding: '4px 0',
+                margin: 0
+              }}
+            >
+              <option value="date-desc" style={{ background: '#141a24', color: '#ffffff' }}>Sort by Watched Date</option>
+              <option value="rating-desc" style={{ background: '#141a24', color: '#ffffff' }}>Sort by Rating (Highest)</option>
+              <option value="title-asc" style={{ background: '#141a24', color: '#ffffff' }}>Sort by Title (A-Z)</option>
+            </select>
+          </div>
+
+          {/* Total Count Badge */}
           <div style={{
             background: 'rgba(255, 51, 102, 0.1)',
             border: '1px solid rgba(255, 51, 102, 0.25)',
             color: 'var(--accent-ruby)',
-            padding: '8px 16px',
+            padding: '8px 14px',
             borderRadius: 'var(--radius-sm)',
             fontSize: '13px',
             fontWeight: '700'
           }}>
-            {totalEntries} Films across {uniqueDatesCount} Days
+            {totalScreenings} Films Logged
           </div>
         </div>
       </div>
 
-      {/* Date-Grouped Visual Feed */}
-      {dateGroups.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '64px 20px', background: '#141a24', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
-          <Film size={36} color="var(--text-muted)" style={{ marginBottom: '12px' }} />
-          <h3 style={{ fontSize: '18px', color: 'var(--text-primary)' }}>No diary entries found</h3>
-          <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginTop: '4px' }}>
-            Try selecting "All Months" or log a new film using the + LOG FILM button.
+      {/* Full-Bleed Continuous Poster Grids by Month */}
+      {monthSections.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '56px 20px', background: '#141a24', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+          <Film size={32} color="var(--text-muted)" style={{ marginBottom: '10px' }} />
+          <h3 style={{ fontSize: '16px', color: 'var(--text-primary)' }}>No diary entries found</h3>
+          <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginTop: '4px' }}>
+            Choose "All Months" from the dropdown above to view your full library.
           </p>
         </div>
       ) : (
-        <div className="diary-timeline">
-          {dateGroups.map(group => {
-            const { dateKey, dateInfo, films } = group;
-
-            return (
-              <section key={dateKey} className="diary-date-section">
-                {/* Date Header Ribbon */}
-                <div className="diary-date-ribbon">
-                  <div className="diary-calendar-badge">
-                    <span className="cal-month">{dateInfo.month}</span>
-                    <span className="cal-day">{dateInfo.day}</span>
-                  </div>
-
-                  <div className="diary-date-info">
-                    <div className="diary-date-title">
-                      {dateInfo.fullDate}
-                    </div>
-                    <div className="diary-date-sub">
-                      {dateInfo.dayOfWeek && <span className="diary-day-pill">{dateInfo.dayOfWeek}</span>}
-                      <span>{films.length} {films.length === 1 ? 'screening' : 'screenings'}</span>
-                    </div>
-                  </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '38px' }}>
+          {monthSections.map(section => (
+            <div key={section.monthKey} className="diary-month-group">
+              {/* Section Header */}
+              <div className="section-header" style={{ marginBottom: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <h2 className="section-title" style={{ fontSize: '19px' }}>
+                    {section.monthTitle}
+                  </h2>
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600' }}>
+                    ({section.films.length} {section.films.length === 1 ? 'film' : 'films'})
+                  </span>
                 </div>
+              </div>
 
-                {/* Visual Poster Cards Grid for this Date */}
-                <div className="diary-posters-grid">
-                  {films.map(film => (
+              {/* Seamless Full-Width Gap-Free Poster Grid */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                gap: '20px'
+              }}>
+                {section.films.map(film => {
+                  const dateLabel = formatCardDate(film.date || film.Watched_Date || film.Date);
+
+                  return (
                     <MovieCard
-                      key={film.id || `${film.name}-${dateKey}`}
+                      key={film.id || `${film.name}-${film.date}`}
                       movie={film}
                       onSelect={onSelectMovie}
+                      badge={dateLabel}
                     />
-                  ))}
-                </div>
-              </section>
-            );
-          })}
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>

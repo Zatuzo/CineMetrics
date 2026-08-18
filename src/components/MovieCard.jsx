@@ -16,20 +16,23 @@ export default function MovieCard({ movie, onSelect, badge = null }) {
           className="poster-img"
         />
 
-        {/* Optional rank badge */}
+        {/* Date badge or Rank badge */}
         {badge && (
           <div style={{
             position: 'absolute',
-            top: '6px',
-            left: '6px',
-            background: 'rgba(10, 10, 10, 0.85)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: '3px',
-            padding: '2px 6px',
-            fontSize: '10px',
-            fontWeight: '700',
-            color: 'var(--text-primary)',
-            zIndex: 2
+            top: '8px',
+            left: '8px',
+            background: 'rgba(10, 13, 20, 0.9)',
+            backdropFilter: 'blur(8px)',
+            border: '1px solid rgba(255, 51, 102, 0.35)',
+            borderRadius: '4px',
+            padding: '3px 8px',
+            fontSize: '11px',
+            fontWeight: '800',
+            color: '#ffffff',
+            letterSpacing: '0.02em',
+            zIndex: 2,
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.6)'
           }}>
             {badge}
           </div>
