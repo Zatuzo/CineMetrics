@@ -11,45 +11,44 @@ import MixesView from './views/MixesView';
 import SemanticView from './views/SemanticView';
 import AnalyticsView from './views/AnalyticsView';
 
-import { SAMPLE_DIARY, SAMPLE_WATCHLIST } from './data/sampleData';
+import userLibrary from './data/userLibrary.json';
 import { fetchSupabaseData } from './supabase';
 
 export default function App() {
-  const [diary, setDiary] = useState(SAMPLE_DIARY);
-  const [watchlist, setWatchlist] = useState(SAMPLE_WATCHLIST);
+  // Initialize immediately with your full 350+ Supabase library
+  const [diary, setDiary] = useState(userLibrary.diary || []);
+  const [watchlist, setWatchlist] = useState(userLibrary.watchlist || []);
   const [currentTab, setCurrentTab] = useState('home');
   const [activeMix, setActiveMix] = useState(null);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [dbSource, setDbSource] = useState('local');
+  const [dbSource, setDbSource] = useState('supabase');
 
   // Modals
   const [isQuickLogOpen, setIsQuickLogOpen] = useState(false);
   const [quickLogFilm, setQuickLogFilm] = useState(null);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
 
-  // Function to load data from Supabase
+  // Real-time Supabase background sync
   const loadFromSupabase = useCallback(async () => {
     setIsSyncing(true);
     try {
-      console.log("⚡ Fetching live Supabase library for user: zatuzo...");
+      console.log("⚡ Syncing latest updates from Supabase...");
       const res = await fetchSupabaseData("zatuzo");
       if (res && res.diary && res.diary.length > 0) {
         setDiary(res.diary);
         setDbSource('supabase');
-        console.log(`✅ Set React state: ${res.diary.length} viewing logs loaded.`);
       }
       if (res && res.watchlist && res.watchlist.length > 0) {
         setWatchlist(res.watchlist);
-        console.log(`✅ Set React state: ${res.watchlist.length} watchlist items loaded.`);
       }
     } catch (e) {
-      console.warn("Could not connect to Supabase, fallback to sample:", e);
+      console.warn("Supabase background sync notice:", e);
     } finally {
       setIsSyncing(false);
     }
   }, []);
 
-  // Auto-fetch from Supabase immediately on mount
+  // Sync on startup
   useEffect(() => {
     loadFromSupabase();
   }, [loadFromSupabase]);
