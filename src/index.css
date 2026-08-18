@@ -523,12 +523,12 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* =========================================================
-   2. EXPANDED CINEFY HERO BANNER (FILLS SIDES)
+   2. EXPANDED CINEFY HERO BANNER (CLEAN & INFORMATIVE)
    ========================================================= */
 .cf-hero-banner {
   background: linear-gradient(180deg, #101520 0%, #0a0d14 100%);
   border-bottom: 1px solid var(--border-subtle);
-  padding: 20px 0;
+  padding: 18px 0;
 }
 
 .cf-banner-inner {
@@ -552,14 +552,7 @@ h1, h2, h3, h4, h5, h6 {
 .cf-banner-left {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-}
-
-.cf-welcome-label {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.09em;
-  color: var(--accent-ruby);
+  gap: 2px;
 }
 
 .cf-welcome-headline {
@@ -571,14 +564,6 @@ h1, h2, h3, h4, h5, h6 {
 .cf-user-name {
   color: #ffffff;
   font-weight: 800;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
-  cursor: pointer;
-  transition: color var(--transition-fast), border-color var(--transition-fast);
-}
-
-.cf-user-name:hover {
-  color: var(--accent-ruby);
-  border-color: var(--accent-ruby);
 }
 
 .cf-banner-stats {
@@ -588,33 +573,26 @@ h1, h2, h3, h4, h5, h6 {
   flex-wrap: wrap;
 }
 
-.cf-stat-chip {
+.cf-stat-badge-item {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   background: #141a24;
   border: 1px solid var(--border-subtle);
-  padding: 7px 15px;
+  padding: 6px 14px;
   border-radius: var(--radius-full);
   font-size: 13px;
   color: var(--text-secondary);
-  cursor: pointer;
-  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+  user-select: none;
 }
 
-.cf-stat-chip:hover {
-  background: #1a2230;
-  border-color: var(--border-hover);
+.cf-stat-badge-item b {
   color: #ffffff;
 }
 
-.cf-stat-chip b {
-  color: #ffffff;
-}
-
-.cf-persona-chip {
+.cf-persona-badge {
   border-color: rgba(255, 51, 102, 0.35);
-  background: rgba(255, 51, 102, 0.1);
+  background: rgba(255, 51, 102, 0.08);
 }
 
 .cf-persona-text {
@@ -634,73 +612,13 @@ h1, h2, h3, h4, h5, h6 {
   max-width: 1680px;
   width: 100%;
   margin: 0 auto;
-  padding: 32px 36px 80px 36px;
+  padding: 28px 36px 80px 36px;
 }
 
 @media (max-width: 768px) {
   .cf-container {
     padding: 20px 16px 60px 16px;
   }
-}
-
-/* Quick Access 6-Grid: Strictly 6 columns on desktop (or 3x2 on tablet) - NO ORPHANS */
-.quick-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 12px;
-  margin-bottom: 38px;
-}
-
-@media (max-width: 1360px) {
-  .quick-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (max-width: 768px) {
-  .quick-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.quick-tile {
-  background: #141a24;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  overflow: hidden;
-  cursor: pointer;
-  transition: background var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
-  height: 60px;
-}
-
-.quick-tile:hover {
-  background: #1a2230;
-  border-color: var(--border-hover);
-  transform: translateY(-1px);
-}
-
-.quick-tile-icon {
-  width: 60px;
-  height: 60px;
-  background: #0e121a;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  border-right: 1px solid var(--border-subtle);
-}
-
-.quick-tile-text {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  padding-right: 14px;
 }
 
 /* Section Containers */
