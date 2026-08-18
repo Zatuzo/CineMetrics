@@ -33,12 +33,12 @@ export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix,
         const dateB = new Date(b.date || b.Watched_Date || b.Date || 0);
         return dateB - dateA;
       })
-      .slice(0, 6);
+      .slice(0, 8);
   }, [diary]);
 
   // 5-Star Masterpieces - Strictly 5.0 stars only
   const topRatedFilms = useMemo(() => {
-    return diary.filter(f => Number(f.rating || f.Rating) === 5).slice(0, 6);
+    return diary.filter(f => Number(f.rating || f.Rating) === 5).slice(0, 8);
   }, [diary]);
 
   const fiveStarCount = useMemo(() => {
@@ -47,7 +47,7 @@ export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix,
 
   // Watchlist Queue (top unwatched)
   const watchlistQueue = useMemo(() => {
-    return (watchlist || []).slice(0, 6);
+    return (watchlist || []).slice(0, 8);
   }, [watchlist]);
 
   const topMix1 = mixes[0];
@@ -55,26 +55,26 @@ export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix,
 
   return (
     <div>
-      {/* 1. Spotify-Style Quick Access 6-Grid */}
+      {/* 1. Quick Access 6-Grid */}
       <div className="quick-grid">
         <div className="quick-tile" onClick={() => onNavigate('rewind')}>
-          <div className="quick-tile-icon" style={{ background: 'var(--accent-red-subtle)', color: 'var(--accent-red)' }}>
-            <Sparkles size={20} />
+          <div className="quick-tile-icon" style={{ background: 'var(--accent-ruby-subtle)', color: 'var(--accent-ruby)' }}>
+            <Sparkles size={24} />
           </div>
           <span className="quick-tile-text">Monthly Rewind</span>
         </div>
 
         <div className="quick-tile" onClick={() => onNavigate('semantic')}>
-          <div className="quick-tile-icon" style={{ background: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa' }}>
-            <Compass size={20} />
+          <div className="quick-tile-icon" style={{ background: 'rgba(6, 182, 212, 0.15)', color: '#06b6d4' }}>
+            <Compass size={24} />
           </div>
           <span className="quick-tile-text">Vibe Search</span>
         </div>
 
         {topMix1 && (
           <div className="quick-tile" onClick={() => { onSelectMix(topMix1); onNavigate('mixes'); }}>
-            <div className="quick-tile-icon" style={{ background: 'rgba(234, 179, 8, 0.15)', color: 'var(--accent-gold)' }}>
-              <Disc3 size={20} />
+            <div className="quick-tile-icon" style={{ background: 'rgba(245, 158, 11, 0.15)', color: 'var(--accent-gold)' }}>
+              <Disc3 size={24} />
             </div>
             <span className="quick-tile-text">{topMix1.title}</span>
           </div>
@@ -82,8 +82,8 @@ export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix,
 
         {topMix2 && (
           <div className="quick-tile" onClick={() => { onSelectMix(topMix2); onNavigate('mixes'); }}>
-            <div className="quick-tile-icon" style={{ background: 'rgba(168, 85, 247, 0.15)', color: '#c084fc' }}>
-              <Disc3 size={20} />
+            <div className="quick-tile-icon" style={{ background: 'rgba(139, 92, 246, 0.15)', color: '#a78bfa' }}>
+              <Disc3 size={24} />
             </div>
             <span className="quick-tile-text">{topMix2.title}</span>
           </div>
@@ -91,14 +91,14 @@ export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix,
 
         <div className="quick-tile" onClick={() => onNavigate('semantic')}>
           <div className="quick-tile-icon" style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#34d399' }}>
-            <Bookmark size={20} />
+            <Bookmark size={24} />
           </div>
           <span className="quick-tile-text">Watchlist ({watchlist.length})</span>
         </div>
 
         <div className="quick-tile" onClick={() => onNavigate('analytics')}>
           <div className="quick-tile-icon" style={{ background: 'var(--accent-gold-subtle)', color: 'var(--accent-gold)' }}>
-            <Star size={20} fill="currentColor" />
+            <Star size={24} fill="currentColor" />
           </div>
           <span className="quick-tile-text">Masterpieces ({fiveStarCount})</span>
         </div>
@@ -116,7 +116,7 @@ export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix,
             onClick={() => onNavigate('rewind')}
           >
             <span>Rewind</span>
-            <ChevronRight size={13} />
+            <ChevronRight size={14} />
           </button>
         </div>
 
@@ -143,7 +143,7 @@ export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix,
             onClick={() => onNavigate('mixes')}
           >
             <span>All Mixes</span>
-            <ChevronRight size={13} />
+            <ChevronRight size={14} />
           </button>
         </div>
 
@@ -176,7 +176,7 @@ export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix,
         </div>
       </div>
 
-      {/* 4. Watchlist Queue (If watchlist has items) */}
+      {/* 4. Watchlist Queue */}
       {watchlistQueue.length > 0 && (
         <div className="section-container">
           <div className="section-header">
@@ -189,7 +189,7 @@ export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix,
               onClick={() => onNavigate('semantic')}
             >
               <span>Vibe Search</span>
-              <ChevronRight size={13} />
+              <ChevronRight size={14} />
             </button>
           </div>
 
@@ -205,7 +205,7 @@ export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix,
         </div>
       )}
 
-      {/* 5. 5-Star Masterpieces (Strictly 5.0 rated films only) */}
+      {/* 5. 5-Star Masterpieces */}
       {topRatedFilms.length > 0 && (
         <div className="section-container">
           <div className="section-header">
@@ -229,52 +229,52 @@ export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix,
 
       {/* 6. Persona Summary Footer Card */}
       <div style={{
-        background: 'var(--bg-card)',
+        background: '#141a24',
         border: '1px solid var(--border-subtle)',
-        borderRadius: 'var(--radius-sm)',
-        padding: '16px 20px',
+        borderRadius: 'var(--radius-md)',
+        padding: '20px 26px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
-        gap: '16px',
-        marginTop: '12px'
+        gap: '20px',
+        marginTop: '16px'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <div style={{
-            width: '36px',
-            height: '36px',
+            width: '44px',
+            height: '44px',
             borderRadius: 'var(--radius-sm)',
-            background: 'var(--accent-red-subtle)',
-            color: 'var(--accent-red)',
+            background: 'var(--accent-ruby-subtle)',
+            color: 'var(--accent-ruby)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
           }}>
-            <Sparkles size={18} />
+            <Sparkles size={22} />
           </div>
           <div>
-            <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--accent-red)' }}>
+            <div style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--accent-ruby)' }}>
               Cinematic Profile
             </div>
-            <div style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-primary)' }}>
+            <div style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-primary)', marginTop: '2px' }}>
               {persona}
             </div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '20px' }}>
+        <div style={{ display: 'flex', gap: '28px' }}>
           <div>
-            <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Watch Time</div>
-            <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--accent-red)' }}>{totalHours.toFixed(1)} hrs</div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '700' }}>Watch Time</div>
+            <div style={{ fontSize: '17px', fontWeight: '800', color: 'var(--accent-ruby)' }}>{totalHours.toFixed(1)} hrs</div>
           </div>
           <div>
-            <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Diary</div>
-            <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-primary)' }}>{totalFilms} films</div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '700' }}>Diary</div>
+            <div style={{ fontSize: '17px', fontWeight: '800', color: 'var(--text-primary)' }}>{totalFilms} films</div>
           </div>
           <div>
-            <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Avg Rating</div>
-            <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--accent-gold)' }}>★ {meanRating ? meanRating.toFixed(2) : 'N/A'}</div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '700' }}>Avg Rating</div>
+            <div style={{ fontSize: '17px', fontWeight: '800', color: 'var(--accent-gold)' }}>★ {meanRating ? meanRating.toFixed(2) : 'N/A'}</div>
           </div>
         </div>
       </div>

@@ -154,39 +154,39 @@ export default function RewindView({ diary, onSelectMovie }) {
 
   return (
     <div>
-      {/* Clean Header with Month Dropdown Selector */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '14px' }}>
+      {/* Header with Month Dropdown Selector */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px', flexWrap: 'wrap', gap: '16px' }}>
         <div>
-          <h1 style={{ fontSize: '22px', fontWeight: '800' }}>Monthly Rewind</h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
-            Retrospective breakdown of your viewing diary for <b>{formatMonthLabel(activeMonth)}</b>.
+          <h1 style={{ fontSize: '24px', fontWeight: '800' }}>Monthly Rewind</h1>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginTop: '3px' }}>
+            Retrospective breakdown of your viewing diary for <b style={{ color: '#ffffff' }}>{formatMonthLabel(activeMonth)}</b>.
           </p>
         </div>
 
-        {/* Compact Month Selector Dropdown with Prev/Next Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {/* Month Selector Dropdown with Prev/Next Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <button
             className="btn-secondary"
-            style={{ padding: '6px 10px' }}
+            style={{ padding: '8px 12px' }}
             onClick={handlePrevMonth}
             disabled={currentIndex >= months.length - 1}
             title="Previous Month"
           >
-            <ChevronLeft size={14} />
+            <ChevronLeft size={16} />
           </button>
 
           {/* Clean Non-Overlapping Calendar & Select Container */}
           <div style={{
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '8px',
-            background: 'var(--bg-card)',
+            gap: '10px',
+            background: '#141a24',
             border: '1px solid var(--border-subtle)',
             borderRadius: 'var(--radius-sm)',
-            padding: '0 12px',
-            height: '34px'
+            padding: '0 14px',
+            height: '40px'
           }}>
-            <Calendar size={14} style={{ color: 'var(--accent-red)', flexShrink: 0 }} />
+            <Calendar size={16} style={{ color: 'var(--accent-ruby)', flexShrink: 0 }} />
             <select
               value={activeMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
@@ -195,8 +195,8 @@ export default function RewindView({ diary, onSelectMovie }) {
                 border: 'none',
                 outline: 'none',
                 color: 'var(--text-primary)',
-                fontSize: '12px',
-                fontWeight: '600',
+                fontSize: '13px',
+                fontWeight: '700',
                 cursor: 'pointer',
                 padding: '4px 0',
                 margin: 0
@@ -205,7 +205,7 @@ export default function RewindView({ diary, onSelectMovie }) {
               {months.map(m => {
                 const count = diary.filter(f => getMonthYear(f) === m).length;
                 return (
-                  <option key={m} value={m} style={{ background: '#181818', color: '#ffffff' }}>
+                  <option key={m} value={m} style={{ background: '#141a24', color: '#ffffff' }}>
                     {formatMonthLabel(m)} ({count} {count === 1 ? 'film' : 'films'})
                   </option>
                 );
@@ -215,61 +215,55 @@ export default function RewindView({ diary, onSelectMovie }) {
 
           <button
             className="btn-secondary"
-            style={{ padding: '6px 10px' }}
+            style={{ padding: '8px 12px' }}
             onClick={handleNextMonth}
             disabled={currentIndex <= 0}
             title="Next Month"
           >
-            <ChevronRight size={14} />
+            <ChevronRight size={16} />
           </button>
 
           <button
             className="btn-primary"
-            style={{ marginLeft: '6px' }}
+            style={{ marginLeft: '8px', height: '40px', padding: '0 16px' }}
             onClick={handleShareStory}
             disabled={isExporting || monthFilms.length === 0}
           >
-            <Share2 size={13} />
+            <Share2 size={14} />
             <span>{isExporting ? 'Exporting...' : 'Share'}</span>
           </button>
         </div>
       </div>
 
       {monthFilms.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '48px 16px', background: 'var(--bg-card)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}>
-          <Film size={28} color="var(--text-muted)" style={{ marginBottom: '8px' }} />
-          <h3 style={{ fontSize: '14px', color: 'var(--text-primary)' }}>No films logged for {formatMonthLabel(activeMonth)}</h3>
-          <p style={{ color: 'var(--text-muted)', fontSize: '12px', marginTop: '2px' }}>
+        <div style={{ textAlign: 'center', padding: '56px 20px', background: '#141a24', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+          <Film size={32} color="var(--text-muted)" style={{ marginBottom: '10px' }} />
+          <h3 style={{ fontSize: '16px', color: 'var(--text-primary)' }}>No films logged for {formatMonthLabel(activeMonth)}</h3>
+          <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginTop: '4px' }}>
             Choose a different month from the dropdown above to view your rewinds.
           </p>
         </div>
       ) : (
         <>
           {/* Persona Card */}
-          <div style={{
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: 'var(--radius-md)',
-            padding: '20px',
-            marginBottom: '28px'
-          }}>
+          <div className="hero-stage">
             <div>
               <span className="hero-tag">
                 {formatMonthLabel(activeMonth).toUpperCase()} REWIND
               </span>
-              <h2 style={{ fontSize: '22px', fontWeight: '800', color: 'var(--text-primary)', marginTop: '4px', marginBottom: '2px' }}>
+              <h2 className="hero-title">
                 {persona}
               </h2>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
                 Your cinematic profile for <b>{formatMonthLabel(activeMonth)}</b> based on {totalFilms} screenings.
               </p>
             </div>
 
             {/* KPI Grid */}
-            <div className="hero-kpis" style={{ marginTop: '16px' }}>
+            <div className="hero-kpis">
               <div className="kpi-tile">
                 <div className="kpi-label">Watch Time</div>
-                <div className="kpi-value" style={{ color: 'var(--accent-red)' }}>{totalHours.toFixed(1)} hrs</div>
+                <div className="kpi-value" style={{ color: 'var(--accent-ruby)' }}>{totalHours.toFixed(1)} hrs</div>
               </div>
               <div className="kpi-tile">
                 <div className="kpi-label">Films Logged</div>
@@ -281,7 +275,7 @@ export default function RewindView({ diary, onSelectMovie }) {
               </div>
               <div className="kpi-tile">
                 <div className="kpi-label">Peak Day</div>
-                <div className="kpi-value" style={{ fontSize: '15px' }}>{peakDay}</div>
+                <div className="kpi-value" style={{ fontSize: '18px' }}>{peakDay}</div>
               </div>
             </div>
           </div>
