@@ -120,7 +120,7 @@ export default function DiaryView({ diary = [], onSelectMovie }) {
             display: 'inline-flex',
             alignItems: 'center',
             gap: '8px',
-            background: '#141a24',
+            background: '#0b1f17',
             border: '1px solid var(--border-subtle)',
             borderRadius: 'var(--radius-sm)',
             padding: '0 12px',
@@ -142,7 +142,7 @@ export default function DiaryView({ diary = [], onSelectMovie }) {
                 margin: 0
               }}
             >
-              <option value="ALL" style={{ background: '#141a24', color: '#ffffff' }}>
+              <option value="ALL" style={{ background: '#0b1f17', color: '#ffffff' }}>
                 All Months ({diary.length} films)
               </option>
               {availableMonths.map(m => {
@@ -151,7 +151,7 @@ export default function DiaryView({ diary = [], onSelectMovie }) {
                   return d && typeof d === 'string' && d.startsWith(m);
                 }).length;
                 return (
-                  <option key={m} value={m} style={{ background: '#141a24', color: '#ffffff' }}>
+                  <option key={m} value={m} style={{ background: '#0b1f17', color: '#ffffff' }}>
                     {formatMonthHeader(m)} ({count} {count === 1 ? 'film' : 'films'})
                   </option>
                 );
@@ -164,7 +164,7 @@ export default function DiaryView({ diary = [], onSelectMovie }) {
             display: 'inline-flex',
             alignItems: 'center',
             gap: '8px',
-            background: '#141a24',
+            background: '#0b1f17',
             border: '1px solid var(--border-subtle)',
             borderRadius: 'var(--radius-sm)',
             padding: '0 12px',
@@ -186,16 +186,16 @@ export default function DiaryView({ diary = [], onSelectMovie }) {
                 margin: 0
               }}
             >
-              <option value="date-desc" style={{ background: '#141a24', color: '#ffffff' }}>Sort by Watched Date</option>
-              <option value="rating-desc" style={{ background: '#141a24', color: '#ffffff' }}>Sort by Rating (Highest)</option>
-              <option value="title-asc" style={{ background: '#141a24', color: '#ffffff' }}>Sort by Title (A-Z)</option>
+              <option value="date-desc" style={{ background: '#0b1f17', color: '#ffffff' }}>Sort by Watched Date</option>
+              <option value="rating-desc" style={{ background: '#0b1f17', color: '#ffffff' }}>Sort by Rating (Highest)</option>
+              <option value="title-asc" style={{ background: '#0b1f17', color: '#ffffff' }}>Sort by Title (A-Z)</option>
             </select>
           </div>
 
           {/* Total Count Badge */}
           <div style={{
-            background: 'rgba(255, 51, 102, 0.1)',
-            border: '1px solid rgba(255, 51, 102, 0.25)',
+            background: 'rgba(251, 54, 64, 0.12)',
+            border: '1px solid rgba(251, 54, 64, 0.35)',
             color: 'var(--accent-ruby)',
             padding: '8px 14px',
             borderRadius: 'var(--radius-sm)',
@@ -209,7 +209,7 @@ export default function DiaryView({ diary = [], onSelectMovie }) {
 
       {/* Full-Bleed Continuous Poster Grids by Month */}
       {monthSections.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '56px 20px', background: '#141a24', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+        <div style={{ textAlign: 'center', padding: '56px 20px', background: '#0b1f17', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
           <Film size={32} color="var(--text-muted)" style={{ marginBottom: '10px' }} />
           <h3 style={{ fontSize: '16px', color: 'var(--text-primary)' }}>No diary entries found</h3>
           <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginTop: '4px' }}>

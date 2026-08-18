@@ -73,12 +73,12 @@ export default function CinefyNavbar({
               <path d="M2 12L12 17L22 12" stroke="url(#cf-grad-1)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
               <defs>
                 <linearGradient id="cf-grad-1" x1="2" y1="2" x2="22" y2="17" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#ff3366" />
-                  <stop offset="1" stopColor="#ff6b3d" />
+                  <stop stopColor="#FB3640" />
+                  <stop offset="1" stopColor="#ff525b" />
                 </linearGradient>
                 <linearGradient id="cf-grad-2" x1="2" y1="12" x2="22" y2="22" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#ff6b3d" />
-                  <stop offset="1" stopColor="#f59e0b" />
+                  <stop stopColor="#FB3640" />
+                  <stop offset="1" stopColor="#b91c1c" />
                 </linearGradient>
               </defs>
             </svg>

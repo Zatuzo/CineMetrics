@@ -22,9 +22,9 @@ export default function MovieCard({ movie, onSelect, badge = null }) {
             position: 'absolute',
             top: '8px',
             left: '8px',
-            background: 'rgba(10, 13, 20, 0.9)',
+            background: 'rgba(0, 15, 8, 0.92)',
             backdropFilter: 'blur(8px)',
-            border: '1px solid rgba(255, 51, 102, 0.35)',
+            border: '1px solid rgba(251, 54, 64, 0.45)',
             borderRadius: '4px',
             padding: '3px 8px',
             fontSize: '11px',
@@ -32,7 +32,7 @@ export default function MovieCard({ movie, onSelect, badge = null }) {
             color: '#ffffff',
             letterSpacing: '0.02em',
             zIndex: 2,
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.6)'
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.7)'
           }}>
             {badge}
           </div>

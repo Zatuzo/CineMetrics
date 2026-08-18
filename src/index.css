@@ -1,33 +1,36 @@
-/* src/index.css - Cinefy Bespoke Cinema Intelligence Design System (Expanded & High-Legibility) */
+/* src/index.css - Cinefy Night (#000F08) & Imperial Red (#FB3640) Design System */
 
 :root {
-  /* Obsidian Cinema Dark Palette */
-  --bg-canvas: #0a0d14;
-  --bg-surface: #101520;
-  --bg-card: #151b26;
-  --bg-card-hover: #1c2433;
-  --bg-card-active: #232d3f;
+  /* Exact User Palette Tokens */
+  --color-night: #000F08;
+  --color-imperial-red: #FB3640;
   
-  /* Signature Cinefy Ruby & Sunset Accents */
-  --accent-ruby: #ff3366;
-  --accent-ruby-hover: #e62458;
-  --accent-ruby-glow: rgba(255, 51, 102, 0.28);
-  --accent-ruby-subtle: rgba(255, 51, 102, 0.14);
+  /* Night Surface Hierarchy */
+  --bg-canvas: #000F08;
+  --bg-surface: #06160f;
+  --bg-card: #0c2017;
+  --bg-card-hover: #132d21;
+  --bg-card-active: #1a3a2b;
   
-  --accent-coral: #ff6b3d;
+  /* Imperial Red Accents */
+  --accent-ruby: #FB3640;
+  --accent-ruby-hover: #e02630;
+  --accent-ruby-glow: rgba(251, 54, 64, 0.32);
+  --accent-ruby-subtle: rgba(251, 54, 64, 0.14);
+  --accent-ruby-border: rgba(251, 54, 64, 0.35);
+  
+  --accent-coral: #ff525b;
   --accent-gold: #f59e0b;
   --accent-gold-subtle: rgba(245, 158, 11, 0.14);
-  --accent-cyan: #06b6d4;
-  --accent-cyan-subtle: rgba(6, 182, 212, 0.14);
-  --accent-violet: #8b5cf6;
+  --accent-cyan: #10b981;
   
   --text-primary: #ffffff;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --text-secondary: #a3b8af;
+  --text-muted: #62796e;
   
-  --border-subtle: #1e2838;
-  --border-hover: #2e3c50;
-  --border-active: #3e506a;
+  --border-subtle: #142e22;
+  --border-hover: #224434;
+  --border-active: #315e49;
   
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -70,11 +73,11 @@ h1, h2, h3, h4, h5, h6 {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #222d3d;
+  background: #173628;
   border-radius: var(--radius-full);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #334358;
+  background: #234d3a;
 }
 
 /* App Shell */
@@ -86,17 +89,17 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* =========================================================
-   1. EXPANDED CINEFY TOP NAVBAR (FILLS SIDES)
+   1. EXPANDED CINEFY TOP NAVBAR (NIGHT & IMPERIAL RED)
    ========================================================= */
 .cf-header {
   position: sticky;
   top: 0;
   z-index: 100;
-  background-color: rgba(10, 13, 20, 0.96);
+  background-color: rgba(0, 15, 8, 0.95);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   border-bottom: 1px solid var(--border-subtle);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
 }
 
 .cf-nav-container {
@@ -132,8 +135,8 @@ h1, h2, h3, h4, h5, h6 {
   width: 38px;
   height: 38px;
   border-radius: var(--radius-sm);
-  background: linear-gradient(135deg, rgba(255, 51, 102, 0.18), rgba(255, 107, 61, 0.18));
-  border: 1px solid rgba(255, 51, 102, 0.35);
+  background: linear-gradient(135deg, rgba(251, 54, 64, 0.22), rgba(251, 54, 64, 0.08));
+  border: 1px solid rgba(251, 54, 64, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -156,7 +159,7 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 22px;
   font-weight: 900;
   letter-spacing: 0.05em;
-  background: linear-gradient(135deg, #ffffff 30%, #cbd5e1 100%);
+  background: linear-gradient(135deg, #ffffff 30%, #d1ded8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   font-family: inherit;
@@ -166,7 +169,7 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.06em;
-  background: linear-gradient(135deg, var(--accent-ruby), var(--accent-coral));
+  background: var(--accent-ruby);
   color: #ffffff;
   padding: 3px 6px;
   border-radius: 4px;
@@ -218,7 +221,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .cf-nav-btn.active {
   color: #ffffff;
-  background: rgba(255, 51, 102, 0.1);
+  background: rgba(251, 54, 64, 0.12);
 }
 
 .cf-nav-btn.active .cf-nav-icon {
@@ -233,8 +236,9 @@ h1, h2, h3, h4, h5, h6 {
   left: 14px;
   right: 14px;
   height: 2px;
-  background: linear-gradient(90deg, var(--accent-ruby), var(--accent-coral));
+  background: var(--accent-ruby);
   border-radius: 2px;
+  box-shadow: 0 0 8px var(--accent-ruby-glow);
 }
 
 /* User Profile Pill */
@@ -266,7 +270,7 @@ h1, h2, h3, h4, h5, h6 {
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent-ruby), var(--accent-coral));
+  background: var(--accent-ruby);
   color: #ffffff;
   font-size: 12px;
   font-weight: 800;
@@ -289,11 +293,11 @@ h1, h2, h3, h4, h5, h6 {
   top: 44px;
   left: 0;
   width: 250px;
-  background: #141a24;
+  background: #091a13;
   border: 1px solid var(--border-hover);
   border-radius: var(--radius-md);
   padding: 12px;
-  box-shadow: 0 16px 40px rgba(0,0,0,0.75);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.85);
   z-index: 200;
 }
 
@@ -319,7 +323,7 @@ h1, h2, h3, h4, h5, h6 {
 .cf-stat-badge {
   font-weight: 700;
   color: #ffffff;
-  background: #1e2838;
+  background: #112a1f;
   padding: 3px 8px;
   border-radius: 4px;
   font-size: 12px;
@@ -367,7 +371,7 @@ h1, h2, h3, h4, h5, h6 {
 .cf-search-input {
   width: 100%;
   height: 38px;
-  background: #131924;
+  background: #081912;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   padding: 0 42px 0 36px;
@@ -380,8 +384,8 @@ h1, h2, h3, h4, h5, h6 {
 
 .cf-search-input:focus {
   border-color: var(--accent-ruby);
-  background: #17202e;
-  box-shadow: 0 0 0 3px rgba(255, 51, 102, 0.18);
+  background: #0d241a;
+  box-shadow: 0 0 0 3px rgba(251, 54, 64, 0.2);
 }
 
 .cf-search-icon {
@@ -398,7 +402,7 @@ h1, h2, h3, h4, h5, h6 {
   right: 10px;
   top: 50%;
   transform: translateY(-50%);
-  background: #1e2838;
+  background: #112a1f;
   color: var(--text-muted);
   font-size: 11px;
   font-weight: 700;
@@ -414,10 +418,10 @@ h1, h2, h3, h4, h5, h6 {
   top: 46px;
   right: 0;
   width: 380px;
-  background: #141a24;
+  background: #091a13;
   border: 1px solid var(--border-hover);
   border-radius: var(--radius-md);
-  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.85);
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.9);
   z-index: 250;
   max-height: 380px;
   overflow-y: auto;
@@ -441,7 +445,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .cf-search-result-item:hover {
-  background: #1e2736;
+  background: #112b1f;
 }
 
 .cf-result-thumb {
@@ -449,7 +453,7 @@ h1, h2, h3, h4, h5, h6 {
   height: 56px;
   object-fit: cover;
   border-radius: 4px;
-  background: #0d1117;
+  background: #000f08;
 }
 
 .cf-result-title {
@@ -475,7 +479,7 @@ h1, h2, h3, h4, h5, h6 {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #151b26;
+  background: #0b1f17;
   border: 1px solid var(--border-subtle);
   color: var(--text-secondary);
   font-size: 13px;
@@ -489,17 +493,17 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .cf-sync-btn:hover {
-  background: #1c2433;
+  background: #143326;
   color: #ffffff;
   border-color: var(--border-hover);
 }
 
-/* + LOG FILM Signature Button */
+/* + LOG FILM Signature Imperial Red Button */
 .cf-log-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: linear-gradient(135deg, var(--accent-ruby), var(--accent-coral));
+  background: var(--accent-ruby);
   color: #ffffff;
   font-size: 13px;
   font-weight: 800;
@@ -509,12 +513,12 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: var(--radius-sm);
   border: none;
   cursor: pointer;
-  box-shadow: 0 3px 12px rgba(255, 51, 102, 0.4);
-  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  box-shadow: 0 3px 14px rgba(251, 54, 64, 0.45);
+  transition: opacity var(--transition-fast), transform var(--transition-fast), background var(--transition-fast);
 }
 
 .cf-log-btn:hover {
-  opacity: 0.92;
+  background: var(--accent-ruby-hover);
   transform: translateY(-1px);
 }
 
@@ -523,10 +527,10 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* =========================================================
-   2. EXPANDED CINEFY HERO BANNER (CLEAN & INFORMATIVE)
+   2. EXPANDED CINEFY HERO BANNER
    ========================================================= */
 .cf-hero-banner {
-  background: linear-gradient(180deg, #101520 0%, #0a0d14 100%);
+  background: linear-gradient(180deg, #071911 0%, #000F08 100%);
   border-bottom: 1px solid var(--border-subtle);
   padding: 18px 0;
 }
@@ -577,7 +581,7 @@ h1, h2, h3, h4, h5, h6 {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: #141a24;
+  background: #0b1f17;
   border: 1px solid var(--border-subtle);
   padding: 6px 14px;
   border-radius: var(--radius-full);
@@ -591,8 +595,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .cf-persona-badge {
-  border-color: rgba(255, 51, 102, 0.35);
-  background: rgba(255, 51, 102, 0.08);
+  border-color: rgba(251, 54, 64, 0.4);
+  background: rgba(251, 54, 64, 0.1);
 }
 
 .cf-persona-text {
@@ -601,7 +605,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* =========================================================
-   3. EXPANDED MAIN CONTENT CONTAINER (FILLS SIDES)
+   3. EXPANDED MAIN CONTENT CONTAINER
    ========================================================= */
 .cf-main-wrapper {
   flex: 1;
@@ -648,7 +652,7 @@ h1, h2, h3, h4, h5, h6 {
   margin-top: 3px;
 }
 
-/* Media Rail: Sleek Horizontal Scroll Strip without lonely wrapping orphans */
+/* Media Rail: Sleek Horizontal Scroll Strip */
 .media-rail {
   display: flex;
   gap: 18px;
@@ -663,7 +667,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .media-rail::-webkit-scrollbar-thumb {
-  background: #242f3e;
+  background: #1c4232;
   border-radius: 4px;
 }
 
@@ -671,7 +675,7 @@ h1, h2, h3, h4, h5, h6 {
   flex: 0 0 205px;
   width: 205px;
   scroll-snap-align: start;
-  background: #141a24;
+  background: #0b1f17;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   padding: 10px;
@@ -683,7 +687,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .media-card:hover {
-  background: #1b2331;
+  background: #122e22;
   border-color: var(--border-hover);
   transform: translateY(-3px);
 }
@@ -694,7 +698,7 @@ h1, h2, h3, h4, h5, h6 {
   aspect-ratio: 2 / 3;
   border-radius: 6px;
   overflow: hidden;
-  background: #0a0d14;
+  background: #000f08;
   margin-bottom: 10px;
 }
 
@@ -731,7 +735,7 @@ h1, h2, h3, h4, h5, h6 {
   gap: 3px;
 }
 
-/* Daily Mix Rail Cards: Exactly 4 columns on desktop - NO ORPHANS */
+/* Daily Mix Rail Cards */
 .mix-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -751,7 +755,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .mix-card {
-  background: #141a24;
+  background: #0b1f17;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   padding: 16px;
@@ -760,16 +764,17 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .mix-card:hover {
-  background: #1b2331;
+  background: #122e22;
   border-color: var(--border-hover);
 }
 
 .mix-card-top-bar {
   height: 3px;
   width: 28px;
-  background: linear-gradient(90deg, var(--accent-ruby), var(--accent-coral));
+  background: var(--accent-ruby);
   border-radius: 2px;
   margin-bottom: 12px;
+  box-shadow: 0 0 8px var(--accent-ruby-glow);
 }
 
 .mix-card-title {
@@ -806,7 +811,7 @@ h1, h2, h3, h4, h5, h6 {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  background: linear-gradient(135deg, var(--accent-ruby), var(--accent-coral));
+  background: var(--accent-ruby);
   color: #ffffff;
   font-weight: 700;
   font-size: 13px;
@@ -814,19 +819,19 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: var(--radius-sm);
   border: none;
   cursor: pointer;
-  box-shadow: 0 2px 12px rgba(255, 51, 102, 0.35);
-  transition: opacity var(--transition-fast);
+  box-shadow: 0 2px 14px rgba(251, 54, 64, 0.4);
+  transition: background var(--transition-fast), opacity var(--transition-fast);
 }
 
 .btn-primary:hover {
-  opacity: 0.9;
+  background: var(--accent-ruby-hover);
 }
 
 .btn-secondary {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  background: #151b26;
+  background: #0b1f17;
   color: var(--text-primary);
   font-weight: 600;
   font-size: 13px;
@@ -838,7 +843,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-secondary:hover {
-  background: #1c2433;
+  background: #143326;
   border-color: var(--border-hover);
 }
 
@@ -847,7 +852,7 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: var(--radius-md);
   padding: 28px;
   margin-bottom: 32px;
-  background: #141a24;
+  background: #0b1f17;
   border: 1px solid var(--border-subtle);
 }
 
@@ -882,7 +887,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .kpi-tile {
-  background: #0e121a;
+  background: #05140d;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   padding: 14px 18px;
@@ -927,7 +932,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .diary-date-section {
-  background: #111722;
+  background: #091a13;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: 20px 24px;
@@ -955,7 +960,7 @@ h1, h2, h3, h4, h5, h6 {
   width: 48px;
   height: 48px;
   border-radius: var(--radius-sm);
-  background: #18202e;
+  background: #0f291e;
   border: 1px solid var(--border-subtle);
   border-top: 3px solid var(--accent-ruby);
   flex-shrink: 0;
@@ -1025,8 +1030,8 @@ h1, h2, h3, h4, h5, h6 {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(6px);
+  background: rgba(0, 15, 8, 0.85);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1035,7 +1040,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .modal-content {
-  background: #131924;
+  background: #081a13;
   border: 1px solid var(--border-hover);
   border-radius: var(--radius-md);
   width: 560px;
@@ -1044,7 +1049,7 @@ h1, h2, h3, h4, h5, h6 {
   overflow-y: auto;
   padding: 26px;
   position: relative;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.95);
 }
 
 /* Form Inputs */
@@ -1063,7 +1068,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .form-input, .form-textarea, .form-select {
   width: 100%;
-  background: #18202e;
+  background: #0d241b;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   padding: 10px 14px;
