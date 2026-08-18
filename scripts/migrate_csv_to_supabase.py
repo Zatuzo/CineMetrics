@@ -105,10 +105,13 @@ def run_migration(csv_folder_path):
                 movie_id = upsert_movie_record(row.to_dict())
                 if not movie_id:
                     continue
-                supabase.table("watchlists").upsert({
-                    "user_id": user_id,
-                    "movie_id": movie_id
-                }).execute()
+                
+                existing = supabase.table("watchlists").select("movie_id").eq("user_id", user_id).eq("movie_id", movie_id).execute()
+                if not existing.data:
+                    supabase.table("watchlists").insert({
+                        "user_id": user_id,
+                        "movie_id": movie_id
+                    }).execute()
                 print(f"  [{idx+1}/{len(df_watch)}] Watchlist: {row.get('Name', 'Unknown')}")
             except Exception as err:
                 print(f"  ⚠️ Error adding to watchlist {row.get('Name')}: {err}")
