@@ -10,9 +10,9 @@ from textblob import TextBlob
 _supabase: Client = None
 
 DEFAULT_COLUMNS = [
-    'Name', 'Year', 'Watched Date', 'Date', 'Rating', 'Review', 
-    'Director', 'Genre', 'Overview', 'Poster', 'Runtime', 'Decade', 
-    'Letterboxd URI', 'Day_of_Week', 'Month_Year', 'Sentiment_Polarity'
+    'Name', 'Year', 'Date', 'Rating', 'Review', 
+    'Director', 'Genre', 'Runtime', 'Popularity', 'Overview', 'Poster',
+    'Decade', 'Day_of_Week', 'Month_Year', 'Sentiment_Polarity'
 ]
 
 def get_supabase_client() -> Client:
@@ -107,67 +107,64 @@ def upsert_movie_record(movie_dict: dict):
 
     return None
 
-def fetch_user_watch_logs(username: str = "zatuzo") -> pd.DataFrame:
-    """Fetches persistent watch logs and joined movie metadata from Supabase."""
-    try:
-        supabase = get_supabase_client()
-        user_id = get_or_create_user(username)
+def fetch_user_watch_logs(username="zatuzo"):
+    """Fetches all viewing logs and joins movie metadata into a Pandas DataFrame."""
+    supabase = get_supabase_client()
+    user_id = get_or_create_user(username)
+    
+    # Query watch_logs and embed the related movies record
+    res = supabase.table("watch_logs").select(
+        "rating, watched_at, review, movies(*)"
+    ).eq("user_id", user_id).order("watched_at", desc=True).execute()
+    
+    if not res.data:
+        return pd.DataFrame()
         
-        res = supabase.table("watch_logs").select("*, movies(*)").eq("user_id", user_id).order("watched_at", desc=True).execute()
-        if not res.data:
-            return pd.DataFrame(columns=DEFAULT_COLUMNS)
+    records = []
+    for r in res.data:
+        m = r.get("movies") or {}
+        genres_raw = m.get("genres")
+        if isinstance(genres_raw, list):
+            genre_str = ", ".join(genres_raw)
+        elif isinstance(genres_raw, str):
+            try:
+                parsed = json.loads(genres_raw)
+                genre_str = ", ".join(parsed) if isinstance(parsed, list) else genres_raw
+            except:
+                genre_str = genres_raw
+        else:
+            genre_str = "Cinema"
 
-        records = []
-        for row in res.data:
-            movie = row.get("movies") or {}
-            watched_at_str = row.get("watched_at") or row.get("created_at") or ""
-            
-            genres_raw = movie.get("genres")
-            if isinstance(genres_raw, list):
-                genre_str = ", ".join(genres_raw)
-            elif isinstance(genres_raw, str):
-                try:
-                    parsed = json.loads(genres_raw)
-                    genre_str = ", ".join(parsed) if isinstance(parsed, list) else genres_raw
-                except:
-                    genre_str = genres_raw
-            else:
-                genre_str = "Cinema"
+        rev_text = r.get("review") or ""
+        polarity = TextBlob(str(rev_text)).sentiment.polarity if str(rev_text).strip() else 0.0
 
-            year_val = movie.get("release_year") or movie.get("year")
-            decade_str = f"{int(year_val) // 10 * 10}s" if year_val else "N/A"
+        records.append({
+            "Name": m.get("title"),
+            "Year": m.get("release_year"),
+            "Date": pd.to_datetime(r.get("watched_at")),
+            "Watched Date": str(r.get("watched_at") or ""),
+            "Rating": r.get("rating"),
+            "Review": rev_text,
+            "Director": m.get("director", "Unknown Director") or "Unknown Director",
+            "Genre": genre_str,
+            "Runtime": m.get("runtime_minutes", 110) or 110,
+            "Popularity": float(m.get("popularity", 10.0)) if m.get("popularity") is not None else 10.0,
+            "Overview": m.get("overview", "") or "",
+            "Poster": m.get("poster_url"),
+            "Sentiment_Polarity": polarity
+        })
+        
+    df = pd.DataFrame(records)
+    if not df.empty and "Date" in df.columns:
+        df["Year"] = pd.to_numeric(df["Year"], errors="coerce")
+        df["Rating"] = pd.to_numeric(df["Rating"], errors="coerce")
+        df["Decade"] = (df["Year"] // 10 * 10).dropna().astype(int).astype(str) + "s"
+        df["Day_of_Week"] = df["Date"].dt.day_name()
+        df["Month_Year"] = df["Date"].dt.to_period("M").astype(str)
+        
+    return df
 
-            record = {
-                "Name": movie.get("title") or movie.get("name", "Untitled"),
-                "Year": year_val,
-                "Watched Date": watched_at_str,
-                "Date": pd.to_datetime(watched_at_str, errors='coerce'),
-                "Rating": row.get("rating"),
-                "Review": row.get("review", "") or "",
-                "Director": movie.get("director") or "Unknown Director",
-                "Genre": genre_str,
-                "Overview": movie.get("overview") or "",
-                "Poster": movie.get("poster_url") or movie.get("poster"),
-                "Runtime": movie.get("runtime_minutes") or movie.get("runtime") or 110,
-                "Decade": decade_str,
-                "Letterboxd URI": ""
-            }
-            records.append(record)
-
-        df = pd.DataFrame(records)
-        df['Rating'] = pd.to_numeric(df['Rating'], errors='coerce')
-        df['Year'] = pd.to_numeric(df['Year'], errors='coerce')
-        df['Day_of_Week'] = df['Date'].dt.day_name()
-        df['Month_Year'] = df['Date'].dt.to_period('M').astype(str)
-        df['Sentiment_Polarity'] = df['Review'].apply(
-            lambda x: TextBlob(str(x)).sentiment.polarity if str(x).strip() else 0.0
-        )
-        return df
-    except Exception as e:
-        print(f"Error fetching watch logs from Supabase: {e}")
-        return pd.DataFrame(columns=DEFAULT_COLUMNS)
-
-def fetch_user_watchlist(username: str = "zatuzo") -> pd.DataFrame:
+def fetch_user_watchlist(username="zatuzo"):
     """Fetches all watchlist items from Supabase with joined movie metadata."""
     try:
         supabase = get_supabase_client()
@@ -200,9 +197,9 @@ def fetch_user_watchlist(username: str = "zatuzo") -> pd.DataFrame:
                 "Year": m.get("release_year"),
                 "Director": m.get("director") or "Unknown",
                 "Genre": genre_str,
-                "Runtime": m.get("runtime_minutes", 110),
-                "Popularity": m.get("popularity", 10.0),
-                "Overview": m.get("overview", ""),
+                "Runtime": m.get("runtime_minutes", 110) or 110,
+                "Popularity": float(m.get("popularity", 10.0)) if m.get("popularity") is not None else 10.0,
+                "Overview": m.get("overview", "") or "",
                 "Poster": m.get("poster_url")
             })
             

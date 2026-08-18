@@ -3,8 +3,8 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-from modules.loaders import load_letterboxd_bundle, load_watchlist_data
 from modules.database import fetch_user_watch_logs, fetch_user_watchlist, save_watch_log
+from modules.loaders import load_letterboxd_bundle, load_watchlist_data
 from modules.search import search_tmdb_movies
 from modules.tmdb import fetch_tmdb_metadata
 from views.rewind_tab import render_rewind_tab
@@ -19,12 +19,7 @@ st.set_page_config(page_title="CineMetrics | Film Diary Engine", layout="wide", 
 st.title("🎬 CineMetrics — Personal Film Diary & Taste Engine")
 st.caption("Deep analytical breakdown of personal viewing logs, director distributions, and monthly rewind summaries.")
 
-# 1. Fetch persistent database records from Supabase
-with st.spinner("Connecting to Supabase database..."):
-    db_df = fetch_user_watch_logs(username="zatuzo")
-    db_watch = fetch_user_watchlist(username="zatuzo")
-
-# 2. Sidebar Quick Movie Logger & Data Settings
+# Sidebar for quick logger and optional fresh CSV imports
 with st.sidebar:
     st.header("⚡ Quick Movie Logger")
     st.caption("Search TMDb and log screenings directly to Supabase.")
@@ -67,21 +62,22 @@ with st.sidebar:
     st.markdown("---")
     st.header("⚙️ Data Settings")
     uploaded_files = st.file_uploader(
-        "Upload new Letterboxd export", 
+        "Upload new Letterboxd export (optional)", 
         type=['csv'], 
         accept_multiple_files=True
     )
 
-# 3. Resolve Data (Uploaded bundle or Database records)
+# 1. Fallback directly to Supabase if no CSV is actively dropped
 if uploaded_files:
     df = load_letterboxd_bundle(uploaded_files)
     df_watch = load_watchlist_data(uploaded_files)
 else:
-    df = db_df
-    df_watch = db_watch
+    df = fetch_user_watch_logs(username="zatuzo")
+    df_watch = fetch_user_watchlist(username="zatuzo")
 
+# 2. Guard clause
 if df.empty:
-    st.info("👋 No viewing logs found in database. Upload your Letterboxd CSV bundle or run the migration script to sync.")
+    st.info("No movie logs found. Run the migration script or upload a Letterboxd export.")
     st.stop()
 
 # Header KPIs
