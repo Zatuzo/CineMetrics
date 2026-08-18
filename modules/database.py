@@ -1,5 +1,6 @@
 # modules/database.py
 import os
+import json
 import pandas as pd
 from datetime import datetime
 from supabase import create_client, Client
@@ -25,80 +26,71 @@ def get_supabase_client() -> Client:
 def get_or_create_user(username: str = "zatuzo") -> str:
     supabase = get_supabase_client()
     try:
-        res = supabase.table("users").select("*").eq("username", username).execute()
+        res = supabase.table("profiles").select("*").eq("username", username).execute()
         if res.data and len(res.data) > 0:
             return res.data[0]["id"]
-        insert_res = supabase.table("users").insert({"username": username}).execute()
+        
+        insert_res = supabase.table("profiles").insert({"username": username}).execute()
         if insert_res.data and len(insert_res.data) > 0:
             return insert_res.data[0]["id"]
-    except Exception:
-        try:
-            res = supabase.table("profiles").select("*").eq("username", username).execute()
-            if res.data and len(res.data) > 0:
-                return res.data[0]["id"]
-            insert_res = supabase.table("profiles").insert({"username": username}).execute()
-            if insert_res.data and len(insert_res.data) > 0:
-                return insert_res.data[0]["id"]
-        except Exception:
-            pass
+    except Exception as e:
+        print(f"Warning checking profiles table: {e}")
 
-    return username
+    return "f37896a8-190e-4ae6-b441-3c0faebd3570"
 
 def upsert_movie_record(movie_dict: dict):
     supabase = get_supabase_client()
-    name = str(movie_dict.get("Name", "Untitled")).strip()
-    year = movie_dict.get("Year")
-    if pd.notna(year):
+    title = str(movie_dict.get("Name") or movie_dict.get("title") or "Untitled").strip()
+    
+    release_year = movie_dict.get("Year") or movie_dict.get("year") or movie_dict.get("release_year")
+    if pd.notna(release_year):
         try:
-            year = int(year)
+            release_year = int(release_year)
         except:
-            year = None
+            release_year = None
     else:
-        year = None
+        release_year = None
 
-    director = movie_dict.get("Director")
-    director = str(director).strip() if pd.notna(director) and str(director).strip() not in ['Unknown Director', 'Auteur'] else None
+    director = movie_dict.get("Director") or movie_dict.get("director")
+    director = str(director).strip() if pd.notna(director) and str(director).strip() not in ['Unknown Director', 'Auteur', 'Unknown', 'None'] else None
 
-    genre = movie_dict.get("Genre")
-    genre = str(genre).strip() if pd.notna(genre) else "Cinema"
+    genres_val = movie_dict.get("Genre") or movie_dict.get("genre") or movie_dict.get("genres")
+    if isinstance(genres_val, list):
+        genres = [str(g).strip() for g in genres_val if str(g).strip()]
+    elif pd.notna(genres_val) and str(genres_val).strip():
+        genres = [g.strip() for g in str(genres_val).split(',') if g.strip()]
+    else:
+        genres = ["Cinema"]
 
-    overview = movie_dict.get("Overview")
+    overview = movie_dict.get("Overview") or movie_dict.get("overview")
     overview = str(overview).strip() if pd.notna(overview) else ""
 
-    poster = movie_dict.get("Poster")
-    poster = str(poster).strip() if pd.notna(poster) and poster else None
+    poster_url = movie_dict.get("Poster") or movie_dict.get("poster") or movie_dict.get("poster_url")
+    poster_url = str(poster_url).strip() if pd.notna(poster_url) and poster_url else None
 
-    runtime = movie_dict.get("Runtime")
+    runtime = movie_dict.get("Runtime") or movie_dict.get("runtime") or movie_dict.get("runtime_minutes")
     if pd.notna(runtime):
         try:
-            runtime = int(runtime)
+            runtime_minutes = int(runtime)
         except:
-            runtime = 110
+            runtime_minutes = 110
     else:
-        runtime = 110
-
-    decade = movie_dict.get("Decade")
-    decade = str(decade).strip() if pd.notna(decade) else None
-
-    letterboxd_uri = movie_dict.get("Letterboxd URI")
-    letterboxd_uri = str(letterboxd_uri).strip() if pd.notna(letterboxd_uri) else None
+        runtime_minutes = 110
 
     movie_payload = {
-        "name": name,
-        "year": year,
+        "title": title,
+        "release_year": release_year,
         "director": director,
-        "genre": genre,
+        "genres": genres,
         "overview": overview,
-        "poster": poster,
-        "runtime": runtime,
-        "decade": decade,
-        "letterboxd_uri": letterboxd_uri
+        "poster_url": poster_url,
+        "runtime_minutes": runtime_minutes
     }
 
     try:
-        query = supabase.table("movies").select("id").eq("name", name)
-        if year:
-            query = query.eq("year", year)
+        query = supabase.table("movies").select("id").eq("title", title)
+        if release_year:
+            query = query.eq("release_year", release_year)
         existing = query.execute()
 
         if existing.data and len(existing.data) > 0:
@@ -110,7 +102,7 @@ def upsert_movie_record(movie_dict: dict):
             if insert_res.data and len(insert_res.data) > 0:
                 return insert_res.data[0]["id"]
     except Exception as e:
-        print(f"Error in upsert_movie_record for {name}: {e}")
+        print(f"Error in upsert_movie_record for {title}: {e}")
         raise e
 
     return None
@@ -121,12 +113,7 @@ def fetch_user_watch_logs(username: str = "zatuzo") -> pd.DataFrame:
         supabase = get_supabase_client()
         user_id = get_or_create_user(username)
         
-        # Try fetching with user_id filter or all watch_logs
-        try:
-            res = supabase.table("watch_logs").select("*, movies(*)").eq("user_id", user_id).order("watched_at", desc=True).execute()
-        except Exception:
-            res = supabase.table("watch_logs").select("*, movies(*)").execute()
-
+        res = supabase.table("watch_logs").select("*, movies(*)").eq("user_id", user_id).order("watched_at", desc=True).execute()
         if not res.data:
             return pd.DataFrame(columns=DEFAULT_COLUMNS)
 
@@ -135,20 +122,35 @@ def fetch_user_watch_logs(username: str = "zatuzo") -> pd.DataFrame:
             movie = row.get("movies") or {}
             watched_at_str = row.get("watched_at") or row.get("created_at") or ""
             
+            genres_raw = movie.get("genres")
+            if isinstance(genres_raw, list):
+                genre_str = ", ".join(genres_raw)
+            elif isinstance(genres_raw, str):
+                try:
+                    parsed = json.loads(genres_raw)
+                    genre_str = ", ".join(parsed) if isinstance(parsed, list) else genres_raw
+                except:
+                    genre_str = genres_raw
+            else:
+                genre_str = "Cinema"
+
+            year_val = movie.get("release_year") or movie.get("year")
+            decade_str = f"{int(year_val) // 10 * 10}s" if year_val else "N/A"
+
             record = {
-                "Name": movie.get("name", "Untitled"),
-                "Year": movie.get("year"),
+                "Name": movie.get("title") or movie.get("name", "Untitled"),
+                "Year": year_val,
                 "Watched Date": watched_at_str,
                 "Date": pd.to_datetime(watched_at_str, errors='coerce'),
                 "Rating": row.get("rating"),
                 "Review": row.get("review", "") or "",
                 "Director": movie.get("director") or "Unknown Director",
-                "Genre": movie.get("genre") or "Cinema",
+                "Genre": genre_str,
                 "Overview": movie.get("overview") or "",
-                "Poster": movie.get("poster"),
-                "Runtime": movie.get("runtime") or 110,
-                "Decade": movie.get("decade") or (f"{int(movie.get('year')) // 10 * 10}s" if movie.get("year") else "N/A"),
-                "Letterboxd URI": movie.get("letterboxd_uri")
+                "Poster": movie.get("poster_url") or movie.get("poster"),
+                "Runtime": movie.get("runtime_minutes") or movie.get("runtime") or 110,
+                "Decade": decade_str,
+                "Letterboxd URI": ""
             }
             records.append(record)
 
@@ -166,37 +168,50 @@ def fetch_user_watch_logs(username: str = "zatuzo") -> pd.DataFrame:
         return pd.DataFrame(columns=DEFAULT_COLUMNS)
 
 def fetch_user_watchlist(username: str = "zatuzo") -> pd.DataFrame:
-    """Fetches persistent watchlist titles and joined movie metadata from Supabase."""
+    """Fetches all watchlist items from Supabase with joined movie metadata."""
     try:
         supabase = get_supabase_client()
         user_id = get_or_create_user(username)
         
-        try:
-            res = supabase.table("watchlists").select("*, movies(*)").eq("user_id", user_id).execute()
-        except Exception:
-            res = supabase.table("watchlists").select("*, movies(*)").execute()
-
+        res = supabase.table("watchlists").select(
+            "user_id, movie_id, movies(title, release_year, director, genres, runtime_minutes, popularity, overview, poster_url)"
+        ).eq("user_id", user_id).execute()
+        
         if not res.data:
-            return pd.DataFrame(columns=['Name', 'Year', 'Director', 'Genre', 'Overview', 'Poster'])
-
+            return pd.DataFrame(columns=['Name', 'Year', 'Director', 'Genre', 'Runtime', 'Popularity', 'Overview', 'Poster'])
+            
         records = []
-        for row in res.data:
-            movie = row.get("movies") or {}
-            records.append({
-                "Name": movie.get("name", "Untitled"),
-                "Year": movie.get("year"),
-                "Director": movie.get("director") or "Unknown",
-                "Genre": movie.get("genre") or "Cinema",
-                "Overview": movie.get("overview") or "",
-                "Poster": movie.get("poster")
-            })
+        for r in res.data:
+            m = r.get("movies") or {}
+            genres_raw = m.get("genres")
+            if isinstance(genres_raw, list):
+                genre_str = ", ".join(genres_raw)
+            elif isinstance(genres_raw, str):
+                try:
+                    parsed = json.loads(genres_raw)
+                    genre_str = ", ".join(parsed) if isinstance(parsed, list) else genres_raw
+                except:
+                    genre_str = genres_raw
+            else:
+                genre_str = "Cinema"
 
+            records.append({
+                "Name": m.get("title") or "Untitled",
+                "Year": m.get("release_year"),
+                "Director": m.get("director") or "Unknown",
+                "Genre": genre_str,
+                "Runtime": m.get("runtime_minutes", 110),
+                "Popularity": m.get("popularity", 10.0),
+                "Overview": m.get("overview", ""),
+                "Poster": m.get("poster_url")
+            })
+            
         df = pd.DataFrame(records)
-        df['Year'] = pd.to_numeric(df['Year'], errors='coerce')
+        df["Year"] = pd.to_numeric(df["Year"], errors="coerce")
         return df
     except Exception as e:
         print(f"Error fetching watchlist from Supabase: {e}")
-        return pd.DataFrame(columns=['Name', 'Year', 'Director', 'Genre', 'Overview', 'Poster'])
+        return pd.DataFrame(columns=['Name', 'Year', 'Director', 'Genre', 'Runtime', 'Popularity', 'Overview', 'Poster'])
 
 def save_watch_log(username: str = "zatuzo", movie_data: dict = None, rating: float = None, review: str = "", watched_at: str = None) -> bool:
     """Saves or quick-logs a film to Supabase."""
