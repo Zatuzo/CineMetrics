@@ -1,5 +1,5 @@
 // src/views/HomeView.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import MovieCard from '../components/MovieCard';
 import PosterImage from '../components/PosterImage';
 import { calculateCinematicPersona } from '../data/personas';
@@ -25,14 +25,26 @@ export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix,
   const ratings = diary.filter(f => f.rating).map(f => f.rating);
   const meanRating = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : null;
 
-  // Recent logs
-  const recentFilms = [...diary].reverse().slice(0, 6);
+  // Recent logs - Sorted STRICTLY descending by date (latest first)
+  const recentFilms = useMemo(() => {
+    return [...diary]
+      .sort((a, b) => {
+        const dateA = new Date(a.date || a.Watched_Date || a.Date || 0);
+        const dateB = new Date(b.date || b.Watched_Date || b.Date || 0);
+        return dateB - dateA;
+      })
+      .slice(0, 6);
+  }, [diary]);
 
   // 5-Star / Top Rated Masterpieces
-  const topRatedFilms = diary.filter(f => f.rating && f.rating >= 4.5).slice(0, 6);
+  const topRatedFilms = useMemo(() => {
+    return diary.filter(f => (f.rating || f.Rating) && (f.rating >= 4.5 || f.Rating >= 4.5)).slice(0, 6);
+  }, [diary]);
 
   // Watchlist Queue (top unwatched)
-  const watchlistQueue = (watchlist || []).slice(0, 6);
+  const watchlistQueue = useMemo(() => {
+    return (watchlist || []).slice(0, 6);
+  }, [watchlist]);
 
   const topMix1 = mixes[0];
   const topMix2 = mixes[1];
@@ -93,7 +105,7 @@ export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix,
         <div className="section-header">
           <div>
             <h2 className="section-title">Recently Logged</h2>
-            <p className="section-subtitle">Latest entries in your diary.</p>
+            <p className="section-subtitle">Latest screenings from your Letterboxd diary.</p>
           </div>
           <button
             className="btn-secondary"

@@ -1,20 +1,45 @@
 // src/views/RewindView.jsx
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import confetti from 'canvas-confetti';
 import { Share2, Film, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { calculateCinematicPersona } from '../data/personas';
 import { generateStoryCardBlob } from '../services/storyCard';
 import MovieCard from '../components/MovieCard';
 
-export default function RewindView({ diary, onSelectMovie }) {
-  const months = Array.from(
-    new Set(diary.map(f => f.monthYear).filter(m => m && m !== 'Undated'))
-  ).sort().reverse();
+function getMonthYear(film) {
+  if (film.monthYear && film.monthYear !== 'Undated') return film.monthYear;
+  if (film.Month_Year && film.Month_Year !== 'Undated') return film.Month_Year;
+  const d = film.date || film.Watched_Date || film.Date;
+  if (d && typeof d === 'string' && d.length >= 7) {
+    return d.slice(0, 7);
+  }
+  return null;
+}
 
-  const [selectedMonth, setSelectedMonth] = useState(months[0] || '2024-03');
+function formatMonthLabel(monthStr) {
+  if (!monthStr || monthStr.length < 7) return monthStr;
+  const [year, month] = monthStr.split('-');
+  const date = new Date(parseInt(year, 10), parseInt(month, 10) - 1, 1);
+  return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+}
+
+export default function RewindView({ diary, onSelectMovie }) {
+  // Extract all unique months and sort descending
+  const months = useMemo(() => {
+    const set = new Set();
+    diary.forEach(f => {
+      const my = getMonthYear(f);
+      if (my) set.add(my);
+    });
+    return Array.from(set).sort().reverse();
+  }, [diary]);
+
+  const [selectedMonth, setSelectedMonth] = useState(() => months[0] || '2026-08');
   const [isExporting, setIsExporting] = useState(false);
 
-  const currentIndex = months.indexOf(selectedMonth);
+  // Synchronize selectedMonth if months array changes
+  const activeMonth = months.includes(selectedMonth) ? selectedMonth : (months[0] || '2026-08');
+  const currentIndex = months.indexOf(activeMonth);
 
   const handlePrevMonth = () => {
     if (currentIndex < months.length - 1) {
@@ -28,21 +53,26 @@ export default function RewindView({ diary, onSelectMovie }) {
     }
   };
 
-  const monthFilms = diary.filter(f => f.monthYear === selectedMonth);
-  const persona = calculateCinematicPersona(monthFilms);
+  // Filter films for the chosen month
+  const monthFilms = useMemo(() => {
+    return diary.filter(f => getMonthYear(f) === activeMonth);
+  }, [diary, activeMonth]);
+
+  const persona = useMemo(() => calculateCinematicPersona(monthFilms), [monthFilms]);
 
   // Stats
   const totalFilms = monthFilms.length;
-  const totalMins = monthFilms.reduce((acc, f) => acc + (f.runtime || 110), 0);
+  const totalMins = monthFilms.reduce((acc, f) => acc + (f.runtime || f.Runtime || 110), 0);
   const totalHours = totalMins / 60;
-  const ratings = monthFilms.filter(f => f.rating).map(f => f.rating);
+  const ratings = monthFilms.filter(f => f.rating || f.Rating).map(f => f.rating || f.Rating);
   const meanRating = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : null;
 
   // Peak Day
   const dayCounts = {};
   monthFilms.forEach(f => {
-    if (f.dayOfWeek && f.dayOfWeek !== 'N/A') {
-      dayCounts[f.dayOfWeek] = (dayCounts[f.dayOfWeek] || 0) + 1;
+    const day = f.dayOfWeek || f.Day_of_Week;
+    if (day && day !== 'N/A') {
+      dayCounts[day] = (dayCounts[day] || 0) + 1;
     }
   });
   const peakDay = Object.keys(dayCounts).sort((a, b) => dayCounts[b] - dayCounts[a])[0] || 'Saturday';
@@ -50,8 +80,9 @@ export default function RewindView({ diary, onSelectMovie }) {
   // Top Director
   const dirCounts = {};
   monthFilms.forEach(f => {
-    if (f.director && f.director !== 'Unknown Director' && f.director !== 'Auteur') {
-      const dirs = f.director.split(',').map(d => d.trim());
+    const dir = f.director || f.Director;
+    if (dir && dir !== 'Unknown Director' && dir !== 'Auteur' && dir !== 'Unknown') {
+      const dirs = dir.split(',').map(d => d.trim());
       dirs.forEach(d => {
         if (d && d !== 'Auteur') dirCounts[d] = (dirCounts[d] || 0) + 1;
       });
@@ -62,22 +93,30 @@ export default function RewindView({ diary, onSelectMovie }) {
   // Top Genres
   const genreCounts = {};
   monthFilms.forEach(f => {
-    if (f.genre) {
-      const gList = f.genre.split(',').map(g => g.trim()).filter(g => g && g !== 'Cinema');
+    const genre = f.genre || f.Genre;
+    if (genre) {
+      const gList = genre.split(',').map(g => g.trim()).filter(g => g && g !== 'Cinema');
       gList.forEach(g => { genreCounts[g] = (genreCounts[g] || 0) + 1; });
     }
   });
   const topGenres = Object.keys(genreCounts).sort((a, b) => genreCounts[b] - genreCounts[a]);
 
-  // All month films sorted by rating
-  const sortedMonthFilms = [...monthFilms].sort((a, b) => (b.rating || 0) - (a.rating || 0));
-  const leadPoster = sortedMonthFilms[0]?.poster || null;
+  // All month films sorted by rating descending
+  const sortedMonthFilms = useMemo(() => {
+    return [...monthFilms].sort((a, b) => {
+      const rA = a.rating ?? a.Rating ?? 0;
+      const rB = b.rating ?? b.Rating ?? 0;
+      return rB - rA;
+    });
+  }, [monthFilms]);
+
+  const leadPoster = sortedMonthFilms[0]?.poster || sortedMonthFilms[0]?.Poster || null;
 
   const handleShareStory = async () => {
     setIsExporting(true);
     try {
       const blob = await generateStoryCardBlob({
-        monthYear: selectedMonth,
+        monthYear: activeMonth,
         persona,
         totalFilms,
         totalHours,
@@ -95,14 +134,14 @@ export default function RewindView({ diary, onSelectMovie }) {
       // Try native Web Share if available
       if (navigator.canShare && navigator.canShare({ files: [new File([blob], 'rewind.png', { type: 'image/png' })] })) {
         await navigator.share({
-          files: [new File([blob], `cinefy_${selectedMonth}.png`, { type: 'image/png' })],
-          title: `Cinefy Rewind - ${selectedMonth}`
+          files: [new File([blob], `cinefy_${activeMonth}.png`, { type: 'image/png' })],
+          title: `Cinefy Rewind - ${formatMonthLabel(activeMonth)}`
         });
       } else {
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `cinefy_${selectedMonth}_rewind.png`;
+        link.download = `cinefy_${activeMonth}_rewind.png`;
         link.click();
         URL.revokeObjectURL(url);
       }
@@ -120,7 +159,7 @@ export default function RewindView({ diary, onSelectMovie }) {
         <div>
           <h1 style={{ fontSize: '22px', fontWeight: '800' }}>Monthly Rewind</h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
-            Retrospective breakdown of your viewing diary.
+            Retrospective breakdown of your viewing diary for <b>{formatMonthLabel(activeMonth)}</b>.
           </p>
         </div>
 
@@ -139,7 +178,7 @@ export default function RewindView({ diary, onSelectMovie }) {
           <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
             <Calendar size={13} style={{ position: 'absolute', left: '10px', color: 'var(--accent-red)', pointerEvents: 'none' }} />
             <select
-              value={selectedMonth}
+              value={activeMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
               className="form-select"
               style={{
@@ -155,11 +194,14 @@ export default function RewindView({ diary, onSelectMovie }) {
                 borderRadius: 'var(--radius-sm)'
               }}
             >
-              {months.map(m => (
-                <option key={m} value={m}>
-                  {m}
-                </option>
-              ))}
+              {months.map(m => {
+                const count = diary.filter(f => getMonthYear(f) === m).length;
+                return (
+                  <option key={m} value={m}>
+                    {formatMonthLabel(m)} ({count} {count === 1 ? 'film' : 'films'})
+                  </option>
+                );
+              })}
             </select>
           </div>
 
@@ -177,7 +219,7 @@ export default function RewindView({ diary, onSelectMovie }) {
             className="btn-primary"
             style={{ marginLeft: '6px' }}
             onClick={handleShareStory}
-            disabled={isExporting}
+            disabled={isExporting || monthFilms.length === 0}
           >
             <Share2 size={13} />
             <span>{isExporting ? 'Exporting...' : 'Share'}</span>
@@ -188,9 +230,9 @@ export default function RewindView({ diary, onSelectMovie }) {
       {monthFilms.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '48px 16px', background: 'var(--bg-card)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}>
           <Film size={28} color="var(--text-muted)" style={{ marginBottom: '8px' }} />
-          <h3 style={{ fontSize: '14px', color: 'var(--text-primary)' }}>No films logged for {selectedMonth}</h3>
+          <h3 style={{ fontSize: '14px', color: 'var(--text-primary)' }}>No films logged for {formatMonthLabel(activeMonth)}</h3>
           <p style={{ color: 'var(--text-muted)', fontSize: '12px', marginTop: '2px' }}>
-            Sync your Letterboxd export or log entries to view monthly rewinds.
+            Choose a different month from the dropdown above to view your rewinds.
           </p>
         </div>
       ) : (
@@ -205,13 +247,13 @@ export default function RewindView({ diary, onSelectMovie }) {
           }}>
             <div>
               <span className="hero-tag">
-                {selectedMonth} REWIND
+                {formatMonthLabel(activeMonth).toUpperCase()} REWIND
               </span>
               <h2 style={{ fontSize: '22px', fontWeight: '800', color: 'var(--text-primary)', marginTop: '4px', marginBottom: '2px' }}>
                 {persona}
               </h2>
               <p style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
-                Your primary viewing profile for <b>{selectedMonth}</b>.
+                Your cinematic profile for <b>{formatMonthLabel(activeMonth)}</b> based on {totalFilms} screenings.
               </p>
             </div>
 
@@ -240,7 +282,7 @@ export default function RewindView({ diary, onSelectMovie }) {
           <div className="section-container">
             <div className="section-header">
               <div>
-                <h2 className="section-title">Films Logged in {selectedMonth}</h2>
+                <h2 className="section-title">Films Logged in {formatMonthLabel(activeMonth)}</h2>
                 <p className="section-subtitle">{sortedMonthFilms.length} films ranked by your rating.</p>
               </div>
             </div>
@@ -248,7 +290,7 @@ export default function RewindView({ diary, onSelectMovie }) {
             <div className="media-rail">
               {sortedMonthFilms.map((film, idx) => (
                 <MovieCard
-                  key={film.id}
+                  key={film.id || `${film.name}-${idx}`}
                   movie={film}
                   onSelect={onSelectMovie}
                   badge={`#${idx + 1}`}

@@ -12,6 +12,8 @@ const SUPABASE_KEY = (typeof import.meta !== 'undefined' && import.meta.env?.VIT
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
 export async function fetchSupabaseData(username = "zatuzo") {
   try {
     // 1. Get profile id
@@ -64,13 +66,22 @@ export async function fetchSupabaseData(username = "zatuzo") {
         const titleVal = m.title || m.name || "Untitled";
         const yearVal = m.release_year ? Number(m.release_year) : (m.year ? Number(m.year) : null);
         const decadeStr = yearVal ? `${Math.floor(yearVal / 10) * 10}s` : "N/A";
-        const watchedDate = r.watched_at || "";
+        const watchedDate = r.watched_at ? String(r.watched_at).slice(0, 10) : "";
         const ratingVal = r.rating != null ? Number(r.rating) : null;
         const runtimeVal = m.runtime_minutes || m.runtime || 110;
         const posterVal = m.poster_url || m.poster || null;
 
+        const monthYear = watchedDate.length >= 7 ? watchedDate.slice(0, 7) : "Undated";
+        let dayOfWeek = "Saturday";
+        if (watchedDate) {
+          try {
+            const dt = new Date(watchedDate + 'T12:00:00Z');
+            dayOfWeek = DAYS[dt.getUTCDay()] || 'Saturday';
+          } catch {}
+        }
+
         return {
-          id: r.id || m.id || `${titleVal}-${yearVal}`,
+          id: r.id || `${titleVal}-${yearVal}-${watchedDate}`,
           // Uppercase keys for compatibility
           Name: titleVal,
           Year: yearVal,
@@ -85,6 +96,10 @@ export async function fetchSupabaseData(username = "zatuzo") {
           Overview: m.overview || "",
           Poster: posterVal,
           Decade: decadeStr,
+          monthYear: monthYear,
+          Month_Year: monthYear,
+          dayOfWeek: dayOfWeek,
+          Day_of_Week: dayOfWeek,
           // Lowercase keys for React components
           name: titleVal,
           title: titleVal,
