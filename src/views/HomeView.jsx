@@ -22,7 +22,7 @@ export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix,
   const totalFilms = diary.length;
   const totalMins = diary.reduce((acc, f) => acc + (f.runtime || 110), 0);
   const totalHours = totalMins / 60;
-  const ratings = diary.filter(f => f.rating).map(f => f.rating);
+  const ratings = diary.filter(f => f.rating || f.Rating).map(f => Number(f.rating || f.Rating));
   const meanRating = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : null;
 
   // Recent logs - Sorted STRICTLY descending by date (latest first)
@@ -36,9 +36,13 @@ export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix,
       .slice(0, 6);
   }, [diary]);
 
-  // 5-Star / Top Rated Masterpieces
+  // 5-Star Masterpieces - Strictly 5.0 stars only
   const topRatedFilms = useMemo(() => {
-    return diary.filter(f => (f.rating || f.Rating) && (f.rating >= 4.5 || f.Rating >= 4.5)).slice(0, 6);
+    return diary.filter(f => Number(f.rating || f.Rating) === 5).slice(0, 6);
+  }, [diary]);
+
+  const fiveStarCount = useMemo(() => {
+    return diary.filter(f => Number(f.rating || f.Rating) === 5).length;
   }, [diary]);
 
   // Watchlist Queue (top unwatched)
@@ -96,7 +100,7 @@ export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix,
           <div className="quick-tile-icon" style={{ background: 'var(--accent-gold-subtle)', color: 'var(--accent-gold)' }}>
             <Star size={20} fill="currentColor" />
           </div>
-          <span className="quick-tile-text">Masterpieces ({topRatedFilms.length})</span>
+          <span className="quick-tile-text">Masterpieces ({fiveStarCount})</span>
         </div>
       </div>
 
@@ -201,13 +205,13 @@ export default function HomeView({ diary, watchlist, onSelectMovie, onSelectMix,
         </div>
       )}
 
-      {/* 5. 5-Star Masterpieces (Highest rated films) */}
+      {/* 5. 5-Star Masterpieces (Strictly 5.0 rated films only) */}
       {topRatedFilms.length > 0 && (
         <div className="section-container">
           <div className="section-header">
             <div>
               <h2 className="section-title">5-Star Masterpieces</h2>
-              <p className="section-subtitle">Your highest-rated films in the diary.</p>
+              <p className="section-subtitle">Films awarded a perfect ★ 5.0 rating in your diary.</p>
             </div>
           </div>
 

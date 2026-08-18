@@ -64,7 +64,7 @@ export default function RewindView({ diary, onSelectMovie }) {
   const totalFilms = monthFilms.length;
   const totalMins = monthFilms.reduce((acc, f) => acc + (f.runtime || f.Runtime || 110), 0);
   const totalHours = totalMins / 60;
-  const ratings = monthFilms.filter(f => f.rating || f.Rating).map(f => f.rating || f.Rating);
+  const ratings = monthFilms.filter(f => f.rating || f.Rating).map(f => Number(f.rating || f.Rating));
   const meanRating = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : null;
 
   // Peak Day
@@ -154,7 +154,7 @@ export default function RewindView({ diary, onSelectMovie }) {
 
   return (
     <div>
-      {/* Clean Header with Compact Month Dropdown Selector */}
+      {/* Clean Header with Month Dropdown Selector */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '14px' }}>
         <div>
           <h1 style={{ fontSize: '22px', fontWeight: '800' }}>Monthly Rewind</h1>
@@ -167,7 +167,7 @@ export default function RewindView({ diary, onSelectMovie }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button
             className="btn-secondary"
-            style={{ padding: '6px 8px' }}
+            style={{ padding: '6px 10px' }}
             onClick={handlePrevMonth}
             disabled={currentIndex >= months.length - 1}
             title="Previous Month"
@@ -175,29 +175,37 @@ export default function RewindView({ diary, onSelectMovie }) {
             <ChevronLeft size={14} />
           </button>
 
-          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-            <Calendar size={13} style={{ position: 'absolute', left: '10px', color: 'var(--accent-red)', pointerEvents: 'none' }} />
+          {/* Clean Non-Overlapping Calendar & Select Container */}
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: 'var(--radius-sm)',
+            padding: '0 12px',
+            height: '34px'
+          }}>
+            <Calendar size={14} style={{ color: 'var(--accent-red)', flexShrink: 0 }} />
             <select
               value={activeMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="form-select"
               style={{
-                paddingLeft: '30px',
-                paddingRight: '28px',
-                height: '34px',
+                background: 'transparent',
+                border: 'none',
+                outline: 'none',
+                color: 'var(--text-primary)',
                 fontSize: '12px',
                 fontWeight: '600',
                 cursor: 'pointer',
-                background: 'var(--bg-card)',
-                color: 'var(--text-primary)',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: 'var(--radius-sm)'
+                padding: '4px 0',
+                margin: 0
               }}
             >
               {months.map(m => {
                 const count = diary.filter(f => getMonthYear(f) === m).length;
                 return (
-                  <option key={m} value={m}>
+                  <option key={m} value={m} style={{ background: '#181818', color: '#ffffff' }}>
                     {formatMonthLabel(m)} ({count} {count === 1 ? 'film' : 'films'})
                   </option>
                 );
@@ -207,7 +215,7 @@ export default function RewindView({ diary, onSelectMovie }) {
 
           <button
             className="btn-secondary"
-            style={{ padding: '6px 8px' }}
+            style={{ padding: '6px 10px' }}
             onClick={handleNextMonth}
             disabled={currentIndex <= 0}
             title="Next Month"
