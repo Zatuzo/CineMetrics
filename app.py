@@ -4,7 +4,9 @@ import pandas as pd
 from datetime import datetime
 
 from modules.loaders import load_letterboxd_bundle, load_watchlist_data
+from modules.database import fetch_user_watch_logs, fetch_user_watchlist, save_watch_log
 from modules.search import search_tmdb_movies
+from modules.tmdb import fetch_tmdb_metadata
 from views.rewind_tab import render_rewind_tab
 from views.mixes_tab import render_mixes_tab
 from views.overview_tab import render_overview_tab
@@ -17,10 +19,15 @@ st.set_page_config(page_title="CineMetrics | Film Diary Engine", layout="wide", 
 st.title("🎬 CineMetrics — Personal Film Diary & Taste Engine")
 st.caption("Deep analytical breakdown of personal viewing logs, director distributions, and monthly rewind summaries.")
 
-# Quick Logger Drawer (Sidebar / Expander)
+# 1. Fetch persistent database records from Supabase
+with st.spinner("Connecting to Supabase database..."):
+    db_df = fetch_user_watch_logs(username="zatuzo")
+    db_watch = fetch_user_watchlist(username="zatuzo")
+
+# 2. Sidebar Quick Movie Logger & Data Settings
 with st.sidebar:
     st.header("⚡ Quick Movie Logger")
-    st.caption("Search TMDb and preview film data.")
+    st.caption("Search TMDb and log screenings directly to Supabase.")
     quick_query = st.text_input("Search movie title:", placeholder="e.g. Inception, Dune...", key="quick_search")
     
     if quick_query:
@@ -40,28 +47,49 @@ with st.sidebar:
                     st.write(m["overview"])
                 log_rating = st.slider(f"Rate '{m['title']}':", 0.5, 5.0, 4.0, 0.5, key=f"rate_{m['id']}")
                 if st.button(f"➕ Log Film", key=f"btn_{m['id']}"):
-                    st.success(f"Logged **{m['title']}** (★ {log_rating})!")
+                    d, g, o, p, r = fetch_tmdb_metadata(m['title'], m.get('year'))
+                    movie_payload = {
+                        "Name": m['title'],
+                        "Year": m.get('year'),
+                        "Director": d,
+                        "Genre": g,
+                        "Overview": o or m.get("overview", ""),
+                        "Poster": p or m.get("poster_url"),
+                        "Runtime": r
+                    }
+                    success = save_watch_log(username="zatuzo", movie_data=movie_payload, rating=log_rating)
+                    if success:
+                        st.success(f"Logged **{m['title']}** (★ {log_rating}) to Supabase!")
+                        st.rerun()
+                    else:
+                        st.warning("Failed to save log to Supabase.")
 
-# File Uploader
-uploaded_files = st.file_uploader(
-    "Upload Letterboxd Export Files (`diary.csv`, `ratings.csv`, `reviews.csv`, `watchlist.csv`)", 
-    type=['csv'], 
-    accept_multiple_files=True
-)
+    st.markdown("---")
+    st.header("⚙️ Data Settings")
+    uploaded_files = st.file_uploader(
+        "Upload new Letterboxd export", 
+        type=['csv'], 
+        accept_multiple_files=True
+    )
 
-df = load_letterboxd_bundle(uploaded_files)
-df_watch = load_watchlist_data(uploaded_files)
+# 3. Resolve Data (Uploaded bundle or Database records)
+if uploaded_files:
+    df = load_letterboxd_bundle(uploaded_files)
+    df_watch = load_watchlist_data(uploaded_files)
+else:
+    df = db_df
+    df_watch = db_watch
 
 if df.empty:
-    st.info("👋 Upload your Letterboxd CSV bundle to start exploring your personal analytics.")
+    st.info("👋 No viewing logs found in database. Upload your Letterboxd CSV bundle or run the migration script to sync.")
     st.stop()
 
 # Header KPIs
 k1, k2, k3, k4 = st.columns(4)
 k1.metric("Total Films Logged", len(df))
-k2.metric("Mean Rating", f"★ {df['Rating'].mean():.2f}")
-k3.metric("Top Decade", df['Decade'].mode()[0] if not df['Decade'].dropna().empty else "N/A")
-top_dir = df[df['Director'] != 'Unknown Director']['Director'].mode()
+k2.metric("Mean Rating", f"★ {df['Rating'].mean():.2f}" if 'Rating' in df.columns and not df['Rating'].dropna().empty else "N/A")
+k3.metric("Top Decade", df['Decade'].mode()[0] if 'Decade' in df.columns and not df['Decade'].dropna().empty else "N/A")
+top_dir = df[df['Director'] != 'Unknown Director']['Director'].mode() if 'Director' in df.columns else pd.Series()
 k4.metric("Top Director", top_dir[0] if not top_dir.empty else "N/A")
 
 st.markdown("---")
