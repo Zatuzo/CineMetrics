@@ -20,7 +20,7 @@ export default function App() {
   const [currentTab, setCurrentTab] = useState('home');
   const [activeMix, setActiveMix] = useState(null);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [isDbLoaded, setIsDbLoaded] = useState(false);
+  const [dbSource, setDbSource] = useState('local');
 
   // Modals
   const [isQuickLogOpen, setIsQuickLogOpen] = useState(false);
@@ -31,13 +31,16 @@ export default function App() {
   const loadFromSupabase = useCallback(async () => {
     setIsSyncing(true);
     try {
+      console.log("⚡ Fetching live Supabase library for user: zatuzo...");
       const res = await fetchSupabaseData("zatuzo");
       if (res && res.diary && res.diary.length > 0) {
         setDiary(res.diary);
-        setIsDbLoaded(true);
+        setDbSource('supabase');
+        console.log(`✅ Set React state: ${res.diary.length} viewing logs loaded.`);
       }
       if (res && res.watchlist && res.watchlist.length > 0) {
         setWatchlist(res.watchlist);
+        console.log(`✅ Set React state: ${res.watchlist.length} watchlist items loaded.`);
       }
     } catch (e) {
       console.warn("Could not connect to Supabase, fallback to sample:", e);
@@ -46,7 +49,7 @@ export default function App() {
     }
   }, []);
 
-  // Auto-fetch from Supabase on mount
+  // Auto-fetch from Supabase immediately on mount
   useEffect(() => {
     loadFromSupabase();
   }, [loadFromSupabase]);
@@ -58,6 +61,7 @@ export default function App() {
   const handleDataLoaded = (newDiary, newWatchlist) => {
     if (newDiary && newDiary.length > 0) {
       setDiary(newDiary);
+      setDbSource('upload');
     }
     if (newWatchlist && newWatchlist.length > 0) {
       setWatchlist(newWatchlist);
@@ -87,6 +91,8 @@ export default function App() {
           setTab={setCurrentTab}
           onOpenUpload={() => setIsUploadOpen(true)}
           totalFilms={diary.length}
+          isSyncing={isSyncing}
+          dbSource={dbSource}
         />
 
         {/* Main Content Stage */}
@@ -95,6 +101,8 @@ export default function App() {
             onOpenQuickLog={() => handleOpenQuickLog(null)}
             onOpenUpload={() => setIsUploadOpen(true)}
             onSelectMovie={(m) => handleOpenQuickLog(m)}
+            onSyncSupabase={loadFromSupabase}
+            isSyncing={isSyncing}
           />
 
           <main className="main-stage">
